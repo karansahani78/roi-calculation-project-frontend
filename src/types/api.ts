@@ -164,6 +164,19 @@ export interface CompareResponse {
   summary: CompareSummary;
 }
 
+// Simulation
+export interface SimulationRequest {
+  baseRequest: RoiCalculationRequest;
+  salaryVariationPercent: number;
+  costVariationPercent: number;
+}
+
+export interface SimulationResponse {
+  conservative: RoiCalculationResponse;
+  expected: RoiCalculationResponse;
+  optimistic: RoiCalculationResponse;
+}
+
 // Verdict color mapping
 export const VERDICT_CONFIG = {
   Excellent: { color: 'text-accent', bg: 'bg-emerald-light', label: 'Excellent ROI' },
