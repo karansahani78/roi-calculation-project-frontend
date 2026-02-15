@@ -21,10 +21,14 @@ export const EarningsChart = ({ data, currencySymbol, formatCurrency }: Earnings
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ delay: 0.6, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-    className="glass-card p-6"
+    className="glass-card p-6 relative overflow-hidden"
   >
-    <h2 className="text-lg font-bold text-foreground">Cumulative Position Over Time</h2>
-    <div className="mt-4 h-72">
+    {/* Radial glow */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="w-72 h-48 rounded-full bg-[#4C6FFF] opacity-[0.05] blur-[60px]" />
+    </div>
+    <h2 className="text-lg font-bold text-foreground relative z-10">Cumulative Position Over Time</h2>
+    <div className="mt-4 h-72 relative z-10">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <defs>

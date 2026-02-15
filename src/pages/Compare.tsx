@@ -6,31 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCountries, fetchMajors, fetchDegreeLevels, fetchCurrencies, fetchUniversities, compareOptions } from '@/lib/api';
 import type { RoiCalculationRequest, CountryDto, CompareResponse } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
+import { AmbientParticles } from '@/components/effects/AmbientParticles';
+import { FilmGrain } from '@/components/effects/FilmGrain';
 
 const defaultOption: Partial<RoiCalculationRequest> = {
-  countryCode: '',
-  majorId: undefined,
-  degreeLevelId: undefined,
-  tuitionAnnual: 0,
-  livingCostAnnual: 0,
-  otherCostsAnnual: 0,
-  durationYears: 4,
-  loanAmount: 0,
-  interestRate: 0,
-  loanTermYears: 10,
-  partTimeIncomeAnnual: 0,
-  expectedSalaryAfter: 0,
-  currentSalary: 0,
-  inflationRate: 3,
-  taxRate: 25,
-  calculationYears: 10,
-  currencyCode: 'USD',
+  countryCode: '', majorId: undefined, degreeLevelId: undefined,
+  tuitionAnnual: 0, livingCostAnnual: 0, otherCostsAnnual: 0, durationYears: 4,
+  loanAmount: 0, interestRate: 0, loanTermYears: 10, partTimeIncomeAnnual: 0,
+  expectedSalaryAfter: 0, currentSalary: 0, inflationRate: 3, taxRate: 25,
+  calculationYears: 10, currencyCode: 'USD',
 };
 
 function isOptionComplete(opt: Partial<RoiCalculationRequest>) {
@@ -38,13 +27,7 @@ function isOptionComplete(opt: Partial<RoiCalculationRequest>) {
 }
 
 const OptionForm = ({
-  label,
-  option,
-  onChange,
-  countries,
-  majors,
-  degreeLevels,
-  currencies,
+  label, option, onChange, countries, majors, degreeLevels, currencies,
 }: {
   label: string;
   option: Partial<RoiCalculationRequest>;
@@ -55,7 +38,6 @@ const OptionForm = ({
   currencies: any[] | undefined;
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-
   const selectedCountry = countries?.find(c => c.code === option.countryCode);
   const { data: universities } = useQuery({
     queryKey: ['universities', selectedCountry?.id],
@@ -63,207 +45,153 @@ const OptionForm = ({
     enabled: !!selectedCountry?.id,
   });
 
-  const update = (key: keyof RoiCalculationRequest, value: string | number) => {
-    onChange({ ...option, [key]: value });
-  };
+  const update = (key: keyof RoiCalculationRequest, value: string | number) => onChange({ ...option, [key]: value });
   const numUpdate = (key: keyof RoiCalculationRequest, value: string) => {
     const num = parseFloat(value);
     update(key, isNaN(num) ? 0 : num);
   };
-
   const complete = isOptionComplete(option);
 
   return (
-    <Card className={`flex-1 transition-all ${complete ? 'border-accent/40 shadow-card-hover' : ''}`}>
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{label}</CardTitle>
-          {complete && <Badge className="bg-accent text-accent-foreground text-xs">Ready</Badge>}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className={`glass-card p-6 flex-1 transition-all duration-300 ${complete ? 'glow-purple border-[#C77DFF]/20' : ''}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-white">{label}</h3>
+        {complete && <Badge className="bg-[#4DD6C8]/15 text-[#4DD6C8] border-[#4DD6C8]/20 border text-xs">Ready</Badge>}
+      </div>
+      <div className="space-y-4">
         {/* Education */}
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label className="text-xs">Country</Label>
+            <Label className="text-xs text-white/50">Country</Label>
             <Select value={option.countryCode || ''} onValueChange={v => update('countryCode', v)}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select country" /></SelectTrigger>
-              <SelectContent>
-                {countries?.map(c => <SelectItem key={c.id} value={c.code}>{c.name}</SelectItem>)}
-                {(!countries || countries.length === 0) && <SelectItem value="_none" disabled>No countries</SelectItem>}
-              </SelectContent>
+              <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Select country" /></SelectTrigger>
+              <SelectContent>{countries?.map(c => <SelectItem key={c.id} value={c.code}>{c.name}</SelectItem>)}{(!countries || countries.length === 0) && <SelectItem value="_none" disabled>No countries</SelectItem>}</SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">University (optional)</Label>
-            <Select
-              value={option.universityId ? String(option.universityId) : ''}
-              onValueChange={v => update('universityId', parseInt(v))}
-              disabled={!selectedCountry}
-            >
-              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={selectedCountry ? "Select university" : "Select country first"} /></SelectTrigger>
-              <SelectContent>
-                {universities?.map(u => <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>)}
-                {(!universities || universities.length === 0) && <SelectItem value="_none" disabled>No universities</SelectItem>}
-              </SelectContent>
+            <Label className="text-xs text-white/50">University (optional)</Label>
+            <Select value={option.universityId ? String(option.universityId) : ''} onValueChange={v => update('universityId', parseInt(v))} disabled={!selectedCountry}>
+              <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder={selectedCountry ? "Select university" : "Select country first"} /></SelectTrigger>
+              <SelectContent>{universities?.map(u => <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>)}{(!universities || universities.length === 0) && <SelectItem value="_none" disabled>No universities</SelectItem>}</SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Major</Label>
+              <Label className="text-xs text-white/50">Major</Label>
               <Select value={option.majorId ? String(option.majorId) : ''} onValueChange={v => update('majorId', parseInt(v))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {majors?.map(m => <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>)}
-                  {(!majors || majors.length === 0) && <SelectItem value="_none" disabled>No majors</SelectItem>}
-                </SelectContent>
+                <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{majors?.map(m => <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>)}{(!majors || majors.length === 0) && <SelectItem value="_none" disabled>No majors</SelectItem>}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Degree</Label>
+              <Label className="text-xs text-white/50">Degree</Label>
               <Select value={option.degreeLevelId ? String(option.degreeLevelId) : ''} onValueChange={v => {
                 const deg = degreeLevels?.find(d => d.id === parseInt(v));
                 onChange({ ...option, degreeLevelId: parseInt(v), durationYears: deg?.typicalDurationYears || 4 });
               }}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {degreeLevels?.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
-                  {(!degreeLevels || degreeLevels.length === 0) && <SelectItem value="_none" disabled>None</SelectItem>}
-                </SelectContent>
+                <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{degreeLevels?.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}{(!degreeLevels || degreeLevels.length === 0) && <SelectItem value="_none" disabled>None</SelectItem>}</SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-white/5" />
 
         {/* Costs & Income */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs">Annual Tuition *</Label>
-            <Input className="h-9 text-sm" type="number" min={0} value={option.tuitionAnnual || ''} onChange={e => numUpdate('tuitionAnnual', e.target.value)} placeholder="25000" />
+            <Label className="text-xs text-white/50">Annual Tuition *</Label>
+            <Input className="h-9 text-sm glass-input" type="number" min={0} value={option.tuitionAnnual || ''} onChange={e => numUpdate('tuitionAnnual', e.target.value)} placeholder="25000" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Living Cost / yr</Label>
-            <Input className="h-9 text-sm" type="number" min={0} value={option.livingCostAnnual || ''} onChange={e => numUpdate('livingCostAnnual', e.target.value)} placeholder="15000" />
+            <Label className="text-xs text-white/50">Living Cost / yr</Label>
+            <Input className="h-9 text-sm glass-input" type="number" min={0} value={option.livingCostAnnual || ''} onChange={e => numUpdate('livingCostAnnual', e.target.value)} placeholder="15000" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Expected Salary *</Label>
-            <Input className="h-9 text-sm" type="number" min={0} value={option.expectedSalaryAfter || ''} onChange={e => numUpdate('expectedSalaryAfter', e.target.value)} placeholder="75000" />
+            <Label className="text-xs text-white/50">Expected Salary *</Label>
+            <Input className="h-9 text-sm glass-input" type="number" min={0} value={option.expectedSalaryAfter || ''} onChange={e => numUpdate('expectedSalaryAfter', e.target.value)} placeholder="75000" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Duration (yrs)</Label>
-            <Input className="h-9 text-sm" type="number" min={1} max={10} value={option.durationYears || ''} onChange={e => numUpdate('durationYears', e.target.value)} />
+            <Label className="text-xs text-white/50">Duration (yrs)</Label>
+            <Input className="h-9 text-sm glass-input" type="number" min={1} max={10} value={option.durationYears || ''} onChange={e => numUpdate('durationYears', e.target.value)} />
           </div>
         </div>
 
-        {/* Advanced toggle */}
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
-        >
+        <button onClick={() => setShowAdvanced(!showAdvanced)} className="flex w-full items-center justify-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors py-1">
           {showAdvanced ? 'Hide' : 'Show'} Advanced
           {showAdvanced ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
 
         <AnimatePresence>
           {showAdvanced && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Other Costs / yr</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} value={option.otherCostsAnnual || ''} onChange={e => numUpdate('otherCostsAnnual', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Loan Amount</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} value={option.loanAmount || ''} onChange={e => numUpdate('loanAmount', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Interest Rate %</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} max={30} step={0.1} value={option.interestRate || ''} onChange={e => numUpdate('interestRate', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Loan Term (yrs)</Label>
-                  <Input className="h-9 text-sm" type="number" min={1} max={30} value={option.loanTermYears || ''} onChange={e => numUpdate('loanTermYears', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Part-time Income</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} value={option.partTimeIncomeAnnual || ''} onChange={e => numUpdate('partTimeIncomeAnnual', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Current Salary</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} value={option.currentSalary || ''} onChange={e => numUpdate('currentSalary', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Tax Rate %</Label>
-                  <Input className="h-9 text-sm" type="number" min={0} max={60} value={option.taxRate || ''} onChange={e => numUpdate('taxRate', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Currency</Label>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Other Costs / yr</Label><Input className="h-9 text-sm glass-input" type="number" min={0} value={option.otherCostsAnnual || ''} onChange={e => numUpdate('otherCostsAnnual', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Loan Amount</Label><Input className="h-9 text-sm glass-input" type="number" min={0} value={option.loanAmount || ''} onChange={e => numUpdate('loanAmount', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Interest Rate %</Label><Input className="h-9 text-sm glass-input" type="number" min={0} max={30} step={0.1} value={option.interestRate || ''} onChange={e => numUpdate('interestRate', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Loan Term (yrs)</Label><Input className="h-9 text-sm glass-input" type="number" min={1} max={30} value={option.loanTermYears || ''} onChange={e => numUpdate('loanTermYears', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Part-time Income</Label><Input className="h-9 text-sm glass-input" type="number" min={0} value={option.partTimeIncomeAnnual || ''} onChange={e => numUpdate('partTimeIncomeAnnual', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Current Salary</Label><Input className="h-9 text-sm glass-input" type="number" min={0} value={option.currentSalary || ''} onChange={e => numUpdate('currentSalary', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Tax Rate %</Label><Input className="h-9 text-sm glass-input" type="number" min={0} max={60} value={option.taxRate || ''} onChange={e => numUpdate('taxRate', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-white/50">Currency</Label>
                   <Select value={option.currencyCode || 'USD'} onValueChange={v => update('currencyCode', v)}>
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {currencies?.map(c => <SelectItem key={c.code} value={c.code}>{c.symbol} {c.code}</SelectItem>)}
-                      {(!currencies || currencies.length === 0) && <SelectItem value="_none" disabled>None</SelectItem>}
-                    </SelectContent>
+                    <SelectTrigger className="h-9 text-sm glass-input"><SelectValue /></SelectTrigger>
+                    <SelectContent>{currencies?.map(c => <SelectItem key={c.code} value={c.code}>{c.symbol} {c.code}</SelectItem>)}{(!currencies || currencies.length === 0) && <SelectItem value="_none" disabled>None</SelectItem>}</SelectContent>
                   </Select>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
+const VERDICT_DARK = {
+  Excellent: { bg: 'bg-[#4DD6C8]/15', color: 'text-[#4DD6C8]', border: 'border-[#4DD6C8]/30' },
+  Good: { bg: 'bg-[#9FE0C3]/15', color: 'text-[#9FE0C3]', border: 'border-[#9FE0C3]/30' },
+  Fair: { bg: 'bg-[#FF9F43]/15', color: 'text-[#FF9F43]', border: 'border-[#FF9F43]/30' },
+  Poor: { bg: 'bg-[#FF7849]/15', color: 'text-[#FF7849]', border: 'border-[#FF7849]/30' },
+} as const;
+
 const ResultCard = ({ label, result, isWinner }: { label: string; result: CompareResponse['optionA']; isWinner: boolean }) => {
   const verdict = result.roiResults.verdict;
-  const config = VERDICT_CONFIG[verdict];
+  const vd = VERDICT_DARK[verdict];
 
   return (
-    <Card className={`flex-1 relative overflow-hidden transition-all ${isWinner ? 'border-accent ring-2 ring-accent/20' : ''}`}>
+    <div className={`glass-card p-6 flex-1 relative overflow-hidden transition-all duration-300 ${isWinner ? 'glow-mint border-[#4DD6C8]/30' : ''}`}>
       {isWinner && (
-        <div className="absolute top-0 right-0 bg-accent text-accent-foreground px-3 py-1 text-xs font-bold rounded-bl-lg flex items-center gap-1">
+        <div className="absolute top-0 right-0 bg-gradient-to-l from-[#4DD6C8] to-[#9FE0C3] text-white px-3 py-1 text-xs font-bold rounded-bl-xl flex items-center gap-1">
           <Trophy className="h-3 w-3" /> Winner
         </div>
       )}
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">{label}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Net ROI</span>
-            <span className="text-xl font-bold text-foreground">
-              ${result.roiResults.netRoi.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">ROI %</span>
-            <span className="text-lg font-semibold text-foreground">{result.roiResults.roiPercentage}%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Break-even</span>
-            <span className="text-lg font-semibold text-foreground">{result.roiResults.breakEvenYears} yrs</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Annual Return</span>
-            <span className="text-lg font-semibold text-foreground">{result.roiResults.annualizedReturn}%</span>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Verdict</span>
-            <Badge className={`${config.bg} ${config.color} border-0`}>{config.label}</Badge>
-          </div>
+      <h3 className="text-lg font-bold text-white mb-4">{label}</h3>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/40">Net ROI</span>
+          <span className="text-xl font-bold text-gradient-rose">${result.roiResults.netRoi.toLocaleString()}</span>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/40">ROI %</span>
+          <span className="text-lg font-semibold text-white">{result.roiResults.roiPercentage}%</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/40">Break-even</span>
+          <span className="text-lg font-semibold text-white">{result.roiResults.breakEvenYears} yrs</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/40">Annual Return</span>
+          <span className="text-lg font-semibold text-white">{result.roiResults.annualizedReturn}%</span>
+        </div>
+        <Separator className="bg-white/5" />
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/40">Verdict</span>
+          <Badge className={`${vd.bg} ${vd.color} ${vd.border} border text-xs`}>{VERDICT_CONFIG[verdict].label}</Badge>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -281,34 +209,25 @@ const ComparePage = () => {
 
   const isRefLoading = countriesLoading || majorsLoading || degreesLoading || currenciesLoading;
   const hasRefError = countriesError || majorsError || degreesError || currenciesError;
-
   const bothReady = isOptionComplete(optionA) && isOptionComplete(optionB);
 
   const handleCompare = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
+    setLoading(true); setError(null); setResult(null);
     try {
-      const res = await compareOptions({
-        optionA: optionA as RoiCalculationRequest,
-        optionB: optionB as RoiCalculationRequest,
-        comparisonType: 'university',
-      });
+      const res = await compareOptions({ optionA: optionA as RoiCalculationRequest, optionB: optionB as RoiCalculationRequest, comparisonType: 'university' });
       setResult(res);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Comparison failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   if (hasRefError) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="mx-auto max-w-md rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-          <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
-          <h2 className="mt-3 font-semibold text-foreground">Backend Unavailable</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Could not load reference data. Please try again later.</p>
+      <div className="min-h-screen results-dark-bg flex items-center justify-center">
+        <div className="glass-card mx-auto max-w-md p-8 text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-[#FF7849]" />
+          <h2 className="mt-3 font-semibold text-white">Backend Unavailable</h2>
+          <p className="mt-1 text-sm text-white/40">Could not load reference data.</p>
         </div>
       </div>
     );
@@ -316,38 +235,39 @@ const ComparePage = () => {
 
   if (isRefLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
-        <span className="ml-3 text-muted-foreground">Loading data...</span>
+      <div className="min-h-screen results-dark-bg flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#C77DFF]" />
+        <span className="ml-3 text-white/40">Loading data...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="gradient-hero py-12">
-        <div className="container text-center">
-          <h1 className="text-3xl font-extrabold text-gradient-hero md:text-4xl">
-            Compare Education Options
-          </h1>
-          <p className="mx-auto mt-3 max-w-lg text-primary-foreground/70">
-            Side-by-side comparison of ROI across different programs, countries, and majors.
-          </p>
-        </div>
-      </div>
+    <div className="relative min-h-screen results-dark-bg">
+      <AmbientParticles count={30} color="#C77DFF" maxOpacity={0.2} />
+      <FilmGrain opacity={0.02} />
 
-      <div className="container max-w-5xl py-8">
-        {/* Option Forms */}
+      <section className="relative py-14">
+        <div className="container text-center relative z-10">
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-3xl font-extrabold text-white md:text-4xl tracking-tight">
+            Compare Education <span className="text-gradient-purple">Options</span>
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.5 }} className="mx-auto mt-3 max-w-lg text-white/40">
+            Side-by-side ROI comparison across programs, countries, and majors.
+          </motion.p>
+        </div>
+      </section>
+
+      <div className="container max-w-5xl pb-16 relative z-10">
         <div className="flex flex-col gap-6 md:flex-row">
           <OptionForm label="Option A" option={optionA} onChange={setOptionA} countries={countries} majors={majors} degreeLevels={degreeLevels} currencies={currencies} />
           <OptionForm label="Option B" option={optionB} onChange={setOptionB} countries={countries} majors={majors} degreeLevels={degreeLevels} currencies={currencies} />
         </div>
 
-        {/* Compare Button */}
         <div className="mt-8 text-center">
           <Button
             size="lg"
-            className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 px-10 text-base font-semibold"
+            className="gap-2 px-10 text-base font-semibold rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 hover:opacity-90 transition-opacity"
             disabled={!bothReady || loading}
             onClick={handleCompare}
           >
@@ -355,30 +275,20 @@ const ComparePage = () => {
             {loading ? 'Comparing...' : 'Compare Now'}
           </Button>
           {!bothReady && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Fill in both options (country, major, degree, tuition, expected salary) to compare.
-            </p>
+            <p className="mt-2 text-xs text-white/30">Fill in both options to compare.</p>
           )}
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive text-center">
-            <AlertCircle className="inline h-4 w-4 mr-1" />
-            {error}
+          <div className="mt-6 glass-card p-4 text-sm text-[#FF7849] text-center border-[#FF7849]/20">
+            <AlertCircle className="inline h-4 w-4 mr-1" />{error}
           </div>
         )}
 
-        {/* Results */}
         <AnimatePresence>
           {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mt-10 space-y-8"
-            >
-              <h2 className="text-2xl font-bold text-foreground text-center">Comparison Results</h2>
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-10 space-y-8">
+              <h2 className="text-2xl font-bold text-white text-center">Comparison Results</h2>
 
               <div className="flex flex-col gap-6 md:flex-row">
                 <ResultCard label="Option A" result={result.optionA} isWinner={result.summary.winner === 'A'} />
@@ -386,41 +296,34 @@ const ComparePage = () => {
               </div>
 
               {/* Summary */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-accent" />
-                    Key Differences
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 sm:grid-cols-3 mb-4">
-                    <div className="rounded-lg bg-muted p-3 text-center">
-                      <p className="text-xs text-muted-foreground">ROI Difference</p>
-                      <p className="text-lg font-bold text-foreground">${Math.abs(result.summary.roiDifference).toLocaleString()}</p>
+              <div className="glass-card p-6">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                  <Trophy className="h-5 w-5 text-[#4DD6C8]" /> Key Differences
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-3 mb-4">
+                  {[
+                    { label: 'ROI Difference', value: `$${Math.abs(result.summary.roiDifference).toLocaleString()}` },
+                    { label: 'Cost Difference', value: `$${Math.abs(result.summary.costDifference).toLocaleString()}` },
+                    { label: 'Break-even Diff', value: `${Math.abs(result.summary.breakEvenDifference)} yrs` },
+                  ].map(item => (
+                    <div key={item.label} className="glass-subtle p-3 text-center">
+                      <p className="text-xs text-white/30">{item.label}</p>
+                      <p className="text-lg font-bold text-white">{item.value}</p>
                     </div>
-                    <div className="rounded-lg bg-muted p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Cost Difference</p>
-                      <p className="text-lg font-bold text-foreground">${Math.abs(result.summary.costDifference).toLocaleString()}</p>
-                    </div>
-                    <div className="rounded-lg bg-muted p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Break-even Diff</p>
-                      <p className="text-lg font-bold text-foreground">{Math.abs(result.summary.breakEvenDifference)} yrs</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-2">
-                    {result.summary.keyDifferences.map((diff, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                        {diff}
-                      </li>
-                    ))}
-                  </ul>
-                  {result.summary.keyDifferences.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center">No comparison data available</p>
-                  )}
-                </CardContent>
-              </Card>
+                  ))}
+                </div>
+                <ul className="space-y-2">
+                  {result.summary.keyDifferences.map((diff, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-white/50">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#4DD6C8]" />
+                      {diff}
+                    </li>
+                  ))}
+                </ul>
+                {result.summary.keyDifferences.length === 0 && (
+                  <p className="text-sm text-white/30 text-center">No comparison data available</p>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
