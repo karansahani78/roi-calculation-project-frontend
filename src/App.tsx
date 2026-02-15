@@ -12,6 +12,7 @@ import Countries from "./pages/Countries";
 import Majors from "./pages/Majors";
 import Compare from "./pages/Compare";
 import NotFound from "./pages/NotFound";
+import SeoPage from "./pages/SeoPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/countries" element={<Countries />} />
               <Route path="/majors" element={<Majors />} />
               <Route path="/compare" element={<Compare />} />
+              <Route path="/page/:slug" element={<SeoPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
