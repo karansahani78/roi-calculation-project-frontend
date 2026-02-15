@@ -23,6 +23,8 @@ import { RecommendationsCard } from '@/components/results/RecommendationsCard';
 import { ShareCard } from '@/components/results/ShareCard';
 import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
 import { SummaryCard } from '@/components/results/SummaryCard';
+import { AmbientParticles } from '@/components/effects/AmbientParticles';
+import { FilmGrain } from '@/components/effects/FilmGrain';
 
 function formatCurrency(value: number, symbol = '$') {
   if (Math.abs(value) >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
@@ -133,9 +135,11 @@ const ResultsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen results-dark-bg">
+    <div className="relative min-h-screen results-dark-bg">
+      <AmbientParticles count={35} color="#C77DFF" maxOpacity={0.2} />
+      <FilmGrain opacity={0.02} />
       {/* Hero */}
-      <section className="py-12 md:py-16">
+      <section className="relative py-12 md:py-16">
         <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center">
             <p className="text-sm font-medium text-white/40 tracking-wide uppercase">
