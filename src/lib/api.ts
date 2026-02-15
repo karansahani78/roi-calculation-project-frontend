@@ -16,7 +16,10 @@ const API_BASE = import.meta.env.VITE_API_URL || 'https://4f6f-103-94-255-95.ngr
 const client = axios.create({
   baseURL: API_BASE,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
+  },
 });
 
 async function unwrap<T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> {
@@ -39,6 +42,8 @@ export const fetchCurrencies = () => unwrap<CurrencyDto[]>(client.get('/api/v1/d
 // ROI Calculation
 export const calculateRoi = (req: RoiCalculationRequest) =>
   unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/calculate', req));
+export const quickEstimateRoi = (req: RoiCalculationRequest) =>
+  unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/quick-estimate', req));
 export const fetchSharedResult = (uuid: string) =>
   unwrap<RoiCalculationResponse>(client.get(`/api/v1/roi/share/${uuid}`));
 

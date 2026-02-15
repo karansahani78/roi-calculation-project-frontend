@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, GraduationCap, DollarSign, Briefcase, Settings2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, GraduationCap, DollarSign, Briefcase, Settings2, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { RoiCalculationRequest, RoiCalculationResponse } from '@/types/api';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCountries, fetchMajors, fetchDegreeLevels, fetchCurrencies, fetchUniversities, calculateRoi } from '@/lib/api';
+import type { RoiCalculationRequest, CountryDto } from '@/types/api';
 
 const STEPS = [
   { id: 'education', label: 'Education', icon: GraduationCap },
@@ -16,31 +18,6 @@ const STEPS = [
 ];
 
 const STORAGE_KEY = 'eduroi-calculator-form';
-
-const SAMPLE_COUNTRIES = [
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'IN', name: 'India' },
-];
-
-const SAMPLE_MAJORS = [
-  { id: 1, name: 'Computer Science' },
-  { id: 2, name: 'Business Administration' },
-  { id: 3, name: 'Engineering' },
-  { id: 4, name: 'Medicine' },
-  { id: 5, name: 'Economics' },
-  { id: 6, name: 'Data Science' },
-];
-
-const SAMPLE_DEGREES = [
-  { id: 1, name: "Bachelor's", years: 4 },
-  { id: 2, name: "Master's", years: 2 },
-  { id: 3, name: 'PhD', years: 5 },
-  { id: 4, name: 'Associate', years: 2 },
-];
 
 const defaultForm: Partial<RoiCalculationRequest> = {
   countryCode: '',
@@ -74,80 +51,56 @@ function saveForm(form: Partial<RoiCalculationRequest>) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(form)); } catch {}
 }
 
-// Mock calculation for demo
-function mockCalculate(form: Partial<RoiCalculationRequest>): RoiCalculationResponse {
-  const tuition = (form.tuitionAnnual || 0) * (form.durationYears || 4);
-  const living = (form.livingCostAnnual || 0) * (form.durationYears || 4);
-  const other = (form.otherCostsAnnual || 0) * (form.durationYears || 4);
-  const totalCost = tuition + living + other;
-  const salary = form.expectedSalaryAfter || 50000;
-  const currentSalary = form.currentSalary || 0;
-  const years = form.calculationYears || 30;
-  const lifetimeEarnings = salary * years;
-  const lifetimeWithout = currentSalary * (years + (form.durationYears || 4));
-  const netRoi = lifetimeEarnings - totalCost - lifetimeWithout;
-  const roiPct = totalCost > 0 ? (netRoi / totalCost) * 100 : 0;
-  const breakEven = salary > currentSalary ? totalCost / (salary - currentSalary) : 99;
-
-  const verdict: RoiCalculationResponse['roiResults']['verdict'] =
-    roiPct > 300 ? 'Excellent' : roiPct > 150 ? 'Good' : roiPct > 50 ? 'Fair' : 'Poor';
-
-  const yearlyBreakdown = Array.from({ length: Math.min(years, 20) }, (_, i) => ({
-    year: i + 1,
-    cumulativeInvestment: i < (form.durationYears || 4) ? (totalCost / (form.durationYears || 4)) * (i + 1) : totalCost,
-    cumulativeEarnings: i < (form.durationYears || 4) ? (form.partTimeIncomeAnnual || 0) * (i + 1) : (form.partTimeIncomeAnnual || 0) * (form.durationYears || 4) + salary * (i + 1 - (form.durationYears || 4)),
-    netPosition: 0,
-  })).map(y => ({ ...y, netPosition: y.cumulativeEarnings - y.cumulativeInvestment }));
-
-  return {
-    uuid: crypto.randomUUID(),
-    shareableUrl: `/results/demo`,
-    inputSummary: {
-      country: SAMPLE_COUNTRIES.find(c => c.code === form.countryCode)?.name || 'Unknown',
-      university: 'Selected University',
-      major: SAMPLE_MAJORS.find(m => m.id === form.majorId)?.name || 'Unknown',
-      degreeLevel: SAMPLE_DEGREES.find(d => d.id === form.degreeLevelId)?.name || 'Unknown',
-      durationYears: form.durationYears || 4,
-      currencyCode: form.currencyCode || 'USD',
-      currencySymbol: '$',
-    },
-    costBreakdown: {
-      tuitionTotal: tuition,
-      livingCostTotal: living,
-      otherCostsTotal: other,
-      loanInterest: (form.loanAmount || 0) * (form.interestRate || 5) / 100 * (form.loanTermYears || 10) / 2,
-      totalEducationCost: totalCost,
-      opportunityCost: currentSalary * (form.durationYears || 4),
-      totalInvestment: totalCost + currentSalary * (form.durationYears || 4),
-    },
-    incomeProjection: {
-      partTimeIncomeTotal: (form.partTimeIncomeAnnual || 0) * (form.durationYears || 4),
-      lifetimeEarnings,
-      lifetimeEarningsWithoutDegree: lifetimeWithout,
-      additionalLifetimeEarnings: lifetimeEarnings - lifetimeWithout,
-    },
-    roiResults: {
-      netRoi: netRoi,
-      roiPercentage: Math.round(roiPct),
-      breakEvenYears: Math.round(breakEven * 10) / 10,
-      annualizedReturn: years > 0 ? Math.round(roiPct / years * 10) / 10 : 0,
-      verdict,
-    },
-    yearlyBreakdown,
-    recommendations: [
-      'Consider applying for scholarships to reduce tuition costs.',
-      'Part-time work during studies can significantly improve your ROI.',
-      'Look into countries with lower living costs for similar program quality.',
-      'Consider starting with a community college to reduce initial costs.',
-    ],
-  };
-}
-
 const CalculatorPage = () => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Partial<RoiCalculationRequest>>(loadForm);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Fetch reference data from backend
+  const { data: countries, isLoading: countriesLoading, isError: countriesError } = useQuery({
+    queryKey: ['countries'],
+    queryFn: fetchCountries,
+  });
+
+  const { data: majors, isLoading: majorsLoading, isError: majorsError } = useQuery({
+    queryKey: ['majors'],
+    queryFn: () => fetchMajors(),
+  });
+
+  const { data: degreeLevels, isLoading: degreesLoading, isError: degreesError } = useQuery({
+    queryKey: ['degree-levels'],
+    queryFn: fetchDegreeLevels,
+  });
+
+  const { data: currencies, isLoading: currenciesLoading, isError: currenciesError } = useQuery({
+    queryKey: ['currencies'],
+    queryFn: fetchCurrencies,
+  });
+
+  // Find selected country to get its ID for university fetch
+  const selectedCountry = countries?.find((c: CountryDto) => c.code === form.countryCode);
+
+  const { data: universities } = useQuery({
+    queryKey: ['universities', selectedCountry?.id],
+    queryFn: () => fetchUniversities(selectedCountry!.id),
+    enabled: !!selectedCountry?.id,
+  });
+
+  // Pre-fill from URL params
+  useEffect(() => {
+    const countryParam = searchParams.get('country');
+    const majorParam = searchParams.get('major');
+    if (countryParam || majorParam) {
+      setForm(prev => ({
+        ...prev,
+        ...(countryParam ? { countryCode: countryParam } : {}),
+        ...(majorParam ? { majorId: parseInt(majorParam) } : {}),
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => { saveForm(form); }, [form]);
 
@@ -167,15 +120,45 @@ const CalculatorPage = () => {
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setLoading(true);
-    setTimeout(() => {
-      const result = mockCalculate(form);
+    setSubmitError(null);
+    try {
+      const result = await calculateRoi(form as RoiCalculationRequest);
       sessionStorage.setItem('eduroi-result', JSON.stringify(result));
       navigate(`/results/${result.uuid}`);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Calculation failed. Please try again.');
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
+
+  const isReferenceLoading = countriesLoading || majorsLoading || degreesLoading || currenciesLoading;
+  const hasReferenceError = countriesError || majorsError || degreesError || currenciesError;
+
+  if (hasReferenceError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="mx-auto max-w-md rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
+          <h2 className="mt-3 font-semibold text-foreground">Backend Unavailable</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Could not load reference data from the server. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isReferenceLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <span className="ml-3 text-muted-foreground">Loading calculator data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -232,34 +215,57 @@ const CalculatorPage = () => {
                     <Select value={form.countryCode || ''} onValueChange={(v) => update('countryCode', v)}>
                       <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                       <SelectContent>
-                        {SAMPLE_COUNTRIES.map(c => (
-                          <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
-                        ))}
+                        {countries && countries.length > 0 ? countries.map(c => (
+                          <SelectItem key={c.id} value={c.code}>{c.name}</SelectItem>
+                        )) : (
+                          <SelectItem value="_none" disabled>No countries available</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>University (optional)</Label>
+                    <Select
+                      value={form.universityId ? String(form.universityId) : ''}
+                      onValueChange={(v) => update('universityId', parseInt(v))}
+                      disabled={!selectedCountry}
+                    >
+                      <SelectTrigger><SelectValue placeholder={selectedCountry ? "Select university" : "Select country first"} /></SelectTrigger>
+                      <SelectContent>
+                        {universities && universities.length > 0 ? universities.map(u => (
+                          <SelectItem key={u.id} value={String(u.id)}>{u.name} — {u.city}</SelectItem>
+                        )) : (
+                          <SelectItem value="_none" disabled>No universities available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Major</Label>
-                    <Select value={String(form.majorId || '')} onValueChange={(v) => update('majorId', parseInt(v))}>
+                    <Select value={form.majorId ? String(form.majorId) : ''} onValueChange={(v) => update('majorId', parseInt(v))}>
                       <SelectTrigger><SelectValue placeholder="Select major" /></SelectTrigger>
                       <SelectContent>
-                        {SAMPLE_MAJORS.map(m => (
+                        {majors && majors.length > 0 ? majors.map(m => (
                           <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
-                        ))}
+                        )) : (
+                          <SelectItem value="_none" disabled>No majors available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Degree Level</Label>
-                    <Select value={String(form.degreeLevelId || '')} onValueChange={(v) => {
-                      const deg = SAMPLE_DEGREES.find(d => d.id === parseInt(v));
-                      setForm(prev => ({ ...prev, degreeLevelId: parseInt(v), durationYears: deg?.years || 4 }));
+                    <Select value={form.degreeLevelId ? String(form.degreeLevelId) : ''} onValueChange={(v) => {
+                      const deg = degreeLevels?.find(d => d.id === parseInt(v));
+                      setForm(prev => ({ ...prev, degreeLevelId: parseInt(v), durationYears: deg?.typicalDurationYears || 4 }));
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select degree" /></SelectTrigger>
                       <SelectContent>
-                        {SAMPLE_DEGREES.map(d => (
+                        {degreeLevels && degreeLevels.length > 0 ? degreeLevels.map(d => (
                           <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                        ))}
+                        )) : (
+                          <SelectItem value="_none" disabled>No degree levels available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -279,19 +285,19 @@ const CalculatorPage = () => {
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Annual Tuition ($)</Label>
+                    <Label>Annual Tuition</Label>
                     <Input type="number" min={0} value={form.tuitionAnnual || ''} onChange={(e) => numUpdate('tuitionAnnual', e.target.value)} placeholder="e.g. 25000" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Annual Living Cost ($)</Label>
+                    <Label>Annual Living Cost</Label>
                     <Input type="number" min={0} value={form.livingCostAnnual || ''} onChange={(e) => numUpdate('livingCostAnnual', e.target.value)} placeholder="e.g. 15000" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Other Annual Costs ($)</Label>
+                    <Label>Other Annual Costs</Label>
                     <Input type="number" min={0} value={form.otherCostsAnnual || ''} onChange={(e) => numUpdate('otherCostsAnnual', e.target.value)} placeholder="e.g. 3000" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Loan Amount ($)</Label>
+                    <Label>Loan Amount</Label>
                     <Input type="number" min={0} value={form.loanAmount || ''} onChange={(e) => numUpdate('loanAmount', e.target.value)} placeholder="e.g. 50000" />
                   </div>
                   <div className="space-y-2">
@@ -314,15 +320,15 @@ const CalculatorPage = () => {
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Expected Salary After Graduation ($)</Label>
+                    <Label>Expected Salary After Graduation</Label>
                     <Input type="number" min={0} value={form.expectedSalaryAfter || ''} onChange={(e) => numUpdate('expectedSalaryAfter', e.target.value)} placeholder="e.g. 75000" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Current Salary ($)</Label>
+                    <Label>Current Salary</Label>
                     <Input type="number" min={0} value={form.currentSalary || ''} onChange={(e) => numUpdate('currentSalary', e.target.value)} placeholder="e.g. 30000" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Part-time Income During Studies ($)</Label>
+                    <Label>Part-time Income During Studies</Label>
                     <Input type="number" min={0} value={form.partTimeIncomeAnnual || ''} onChange={(e) => numUpdate('partTimeIncomeAnnual', e.target.value)} placeholder="e.g. 8000" />
                   </div>
                 </div>
@@ -353,9 +359,11 @@ const CalculatorPage = () => {
                     <Select value={form.currencyCode || 'USD'} onValueChange={(v) => update('currencyCode', v)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'].map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
+                        {currencies && currencies.length > 0 ? currencies.map(c => (
+                          <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</SelectItem>
+                        )) : (
+                          <SelectItem value="_none" disabled>No currencies available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -364,6 +372,13 @@ const CalculatorPage = () => {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Submit Error */}
+        {submitError && (
+          <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
@@ -392,7 +407,7 @@ const CalculatorPage = () => {
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent-foreground border-t-transparent" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Calculating...
                 </span>
               ) : (
