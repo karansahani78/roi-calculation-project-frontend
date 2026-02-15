@@ -177,6 +177,39 @@ export interface SimulationResponse {
   optimistic: RoiCalculationResponse;
 }
 
+// Career Intelligence
+export interface CareerIntelligenceRequest {
+  majorId: number;
+  countryCode: string;
+  degreeLevelId: number;
+  expectedSalaryAfter: number;
+  durationYears: number;
+  roiPercentage: number;
+}
+
+export interface CareerPathStage {
+  stage: string;
+  years: string;
+  avgSalary: number;
+  roleFocus: string;
+}
+
+export interface CareerIntelligenceResponse {
+  employmentProbability: {
+    '3_months': number;
+    '6_months': number;
+    '12_months': number;
+  };
+  salaryBand: {
+    conservative: number;
+    expected: number;
+    optimistic: number;
+  };
+  careerPath: CareerPathStage[];
+  marketOutlook: string;
+  insight: string;
+}
+
 // Verdict color mapping
 export const VERDICT_CONFIG = {
   Excellent: { color: 'text-accent', bg: 'bg-emerald-light', label: 'Excellent ROI' },

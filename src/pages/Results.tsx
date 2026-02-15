@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
-import type { RoiCalculationRequest, RoiCalculationResponse } from '@/types/api';
+import type { RoiCalculationRequest, RoiCalculationResponse, CareerIntelligenceRequest } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
 import { fetchSharedResult } from '@/lib/api';
 import { MetricCard } from '@/components/results/MetricCard';
@@ -24,6 +24,7 @@ import { ShareCard } from '@/components/results/ShareCard';
 import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
 import { SummaryCard } from '@/components/results/SummaryCard';
 import { SimulationSection } from '@/components/results/SimulationSection';
+import { CareerIntelligencePanel } from '@/components/results/CareerIntelligencePanel';
 import { AmbientParticles } from '@/components/effects/AmbientParticles';
 import { FilmGrain } from '@/components/effects/FilmGrain';
 
@@ -227,6 +228,21 @@ const ResultsPage = () => {
         {baseRequest && (
           <SimulationSection
             baseRequest={baseRequest}
+            currencySymbol={inputSummary.currencySymbol}
+          />
+        )}
+
+        {/* Career Intelligence Panel */}
+        {baseRequest && (
+          <CareerIntelligencePanel
+            request={{
+              majorId: baseRequest.majorId,
+              countryCode: baseRequest.countryCode,
+              degreeLevelId: baseRequest.degreeLevelId,
+              expectedSalaryAfter: baseRequest.expectedSalaryAfter,
+              durationYears: baseRequest.durationYears,
+              roiPercentage: roiResults.roiPercentage,
+            }}
             currencySymbol={inputSummary.currencySymbol}
           />
         )}
