@@ -13,6 +13,8 @@ import Majors from "./pages/Majors";
 import Compare from "./pages/Compare";
 import NotFound from "./pages/NotFound";
 import SeoPage from "./pages/SeoPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
               <Route path="/majors" element={<Majors />} />
               <Route path="/compare" element={<Compare />} />
               <Route path="/page/:slug" element={<SeoPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

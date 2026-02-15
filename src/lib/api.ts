@@ -13,7 +13,7 @@ import type {
   CompareResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://143d-103-94-255-95.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://b598-103-94-255-95.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
