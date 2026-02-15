@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
-import type { RoiCalculationResponse } from '@/types/api';
+import type { RoiCalculationRequest, RoiCalculationResponse } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
 import { fetchSharedResult } from '@/lib/api';
 import { MetricCard } from '@/components/results/MetricCard';
@@ -23,6 +23,7 @@ import { RecommendationsCard } from '@/components/results/RecommendationsCard';
 import { ShareCard } from '@/components/results/ShareCard';
 import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
 import { SummaryCard } from '@/components/results/SummaryCard';
+import { SimulationSection } from '@/components/results/SimulationSection';
 import { AmbientParticles } from '@/components/effects/AmbientParticles';
 import { FilmGrain } from '@/components/effects/FilmGrain';
 
@@ -44,6 +45,15 @@ const ResultsPage = () => {
   const [result, setResult] = useState<RoiCalculationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Load form data for simulation
+  const baseRequest = useMemo<RoiCalculationRequest | null>(() => {
+    try {
+      const saved = localStorage.getItem('eduroi-calculator-form');
+      if (saved) return JSON.parse(saved) as RoiCalculationRequest;
+    } catch {}
+    return null;
+  }, []);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('eduroi-result');
@@ -212,6 +222,14 @@ const ResultsPage = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Simulation Section */}
+        {baseRequest && (
+          <SimulationSection
+            baseRequest={baseRequest}
+            currencySymbol={inputSummary.currencySymbol}
+          />
+        )}
       </div>
     </div>
   );

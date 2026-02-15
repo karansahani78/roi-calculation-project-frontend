@@ -11,9 +11,11 @@ import type {
   SeoPageDto,
   CompareRequest,
   CompareResponse,
+  SimulationRequest,
+  SimulationResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://ec10-103-94-255-95.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://b6a0-103-94-255-95.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -48,6 +50,10 @@ export const quickEstimateRoi = (req: RoiCalculationRequest) =>
   unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/quick-estimate', req));
 export const fetchSharedResult = (uuid: string) =>
   unwrap<RoiCalculationResponse>(client.get(`/api/v1/roi/share/${uuid}`));
+
+// Simulation
+export const simulateRoi = (req: SimulationRequest) =>
+  unwrap<SimulationResponse>(client.post('/api/v1/roi/simulate', req));
 
 // Compare
 export const compareOptions = (req: CompareRequest) =>
