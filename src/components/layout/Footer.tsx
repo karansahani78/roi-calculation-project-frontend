@@ -37,8 +37,8 @@ export function Footer() {
           <div>
             <h4 className="mb-3 text-sm font-semibold text-foreground">Legal</h4>
             <nav className="flex flex-col gap-2">
-              <span className="text-sm text-muted-foreground">Privacy Policy</span>
-              <span className="text-sm text-muted-foreground">Terms of Service</span>
+              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link>
             </nav>
           </div>
         </div>
