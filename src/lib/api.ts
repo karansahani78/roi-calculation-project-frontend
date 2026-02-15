@@ -13,9 +13,11 @@ import type {
   CompareResponse,
   SimulationRequest,
   SimulationResponse,
+  CareerIntelligenceRequest,
+  CareerIntelligenceResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://b6a0-103-94-255-95.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://14cd-103-94-255-95.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -58,6 +60,10 @@ export const simulateRoi = (req: SimulationRequest) =>
 // Compare
 export const compareOptions = (req: CompareRequest) =>
   unwrap<CompareResponse>(client.post('/api/v1/compare', req));
+
+// Career Intelligence
+export const fetchCareerIntelligence = (req: CareerIntelligenceRequest) =>
+  unwrap<CareerIntelligenceResponse>(client.post('/api/v1/career/intelligence', req));
 
 // PDF Report
 export const downloadRoiPdf = async (uuid: string): Promise<Blob> => {
