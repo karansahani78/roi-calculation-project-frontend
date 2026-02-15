@@ -132,6 +132,38 @@ export interface SeoPageDto {
   }[];
 }
 
+// Compare DTOs
+export interface CompareRequest {
+  optionA: RoiCalculationRequest;
+  optionB: RoiCalculationRequest;
+  comparisonType: string;
+}
+
+export interface CompareOptionResult {
+  roiResults: {
+    netRoi: number;
+    roiPercentage: number;
+    breakEvenYears: number;
+    annualizedReturn: number;
+    verdict: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  };
+}
+
+export interface CompareSummary {
+  winner: 'A' | 'B';
+  roiDifference: number;
+  costDifference: number;
+  breakEvenDifference: number;
+  keyDifferences: string[];
+}
+
+export interface CompareResponse {
+  uuid: string;
+  optionA: CompareOptionResult;
+  optionB: CompareOptionResult;
+  summary: CompareSummary;
+}
+
 // Verdict color mapping
 export const VERDICT_CONFIG = {
   Excellent: { color: 'text-accent', bg: 'bg-emerald-light', label: 'Excellent ROI' },
