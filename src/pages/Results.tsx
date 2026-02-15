@@ -11,11 +11,14 @@ import {
   CheckCircle2,
   Lightbulb,
   BarChart3,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
 import type { RoiCalculationResponse } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
+import { fetchSharedResult } from '@/lib/api';
 import {
   PieChart,
   Pie,
@@ -41,13 +44,63 @@ function formatCurrency(value: number, symbol = '$') {
 const ResultsPage = () => {
   const { uuid } = useParams<{ uuid: string }>();
   const [result, setResult] = useState<RoiCalculationResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('eduroi-result');
     if (stored) {
-      setResult(JSON.parse(stored));
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.uuid === uuid) {
+          setResult(parsed);
+          setLoading(false);
+          return;
+        }
+      } catch {}
+    }
+
+    // Fetch from backend if no session data
+    if (uuid) {
+      fetchSharedResult(uuid)
+        .then((data) => {
+          setResult(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : 'Could not load result.');
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
   }, [uuid]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <span className="ml-3 text-muted-foreground">Loading results...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="mx-auto max-w-md rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
+          <h2 className="mt-3 font-semibold text-foreground">Error Loading Result</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+          <Link to="/calculator">
+            <Button className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
+              New Calculation
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!result) {
     return (
@@ -186,7 +239,6 @@ const ResultsPage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Share */}
             <div className="rounded-xl border border-border bg-card p-6 shadow-card">
               <h3 className="font-semibold text-foreground">Share Results</h3>
               <p className="mt-1 text-sm text-muted-foreground">Send this analysis to friends or advisors.</p>
@@ -200,7 +252,6 @@ const ResultsPage = () => {
 
             <AdSlot slot="sidebar" />
 
-            {/* Summary */}
             <div className="rounded-xl border border-border bg-card p-6 shadow-card">
               <h3 className="font-semibold text-foreground">Summary</h3>
               <dl className="mt-4 space-y-3 text-sm">
@@ -218,7 +269,6 @@ const ResultsPage = () => {
               </dl>
             </div>
 
-            {/* Lead Capture */}
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-6">
               <h3 className="font-semibold text-foreground">Get Detailed Report</h3>
               <p className="mt-1 text-sm text-muted-foreground">Enter your email for a detailed PDF analysis.</p>
