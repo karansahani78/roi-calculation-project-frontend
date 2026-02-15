@@ -13,7 +13,7 @@ import type {
   CompareResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://b598-103-94-255-95.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://ec10-103-94-255-95.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -52,6 +52,14 @@ export const fetchSharedResult = (uuid: string) =>
 // Compare
 export const compareOptions = (req: CompareRequest) =>
   unwrap<CompareResponse>(client.post('/api/v1/compare', req));
+
+// PDF Report
+export const downloadRoiPdf = async (uuid: string): Promise<Blob> => {
+  const { data } = await client.get(`/api/v1/reports/roi/pdf/${uuid}`, {
+    responseType: 'blob',
+  });
+  return data;
+};
 
 // SEO Pages
 export const fetchSeoPages = () => unwrap<SeoPageDto[]>(client.get('/api/v1/seo/pages'));

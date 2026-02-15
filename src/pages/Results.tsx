@@ -6,37 +6,23 @@ import {
   TrendingDown,
   Clock,
   Percent,
-  Share2,
-  ArrowRight,
-  CheckCircle2,
-  Lightbulb,
   BarChart3,
   Loader2,
   AlertCircle,
-  Mail,
-  Copy,
+  ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
 import type { RoiCalculationResponse } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
 import { fetchSharedResult } from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-
-const CHART_COLORS = ['#1a365d', '#0d9668', '#e8a317', '#7c3aed', '#e53e3e'];
+import { MetricCard } from '@/components/results/MetricCard';
+import { CostBreakdownChart } from '@/components/results/CostBreakdownChart';
+import { EarningsChart } from '@/components/results/EarningsChart';
+import { RecommendationsCard } from '@/components/results/RecommendationsCard';
+import { ShareCard } from '@/components/results/ShareCard';
+import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
+import { SummaryCard } from '@/components/results/SummaryCard';
 
 function formatCurrency(value: number, symbol = '$') {
   if (Math.abs(value) >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
@@ -44,14 +30,18 @@ function formatCurrency(value: number, symbol = '$') {
   return `${symbol}${value.toFixed(0)}`;
 }
 
+const VERDICT_DARK = {
+  Excellent: { bg: 'bg-[#4DD6C8]/15', color: 'text-[#4DD6C8]', border: 'border-[#4DD6C8]/30' },
+  Good: { bg: 'bg-[#9FE0C3]/15', color: 'text-[#9FE0C3]', border: 'border-[#9FE0C3]/30' },
+  Fair: { bg: 'bg-[#FF9F43]/15', color: 'text-[#FF9F43]', border: 'border-[#FF9F43]/30' },
+  Poor: { bg: 'bg-[#FF7849]/15', color: 'text-[#FF7849]', border: 'border-[#FF7849]/30' },
+} as const;
+
 const ResultsPage = () => {
   const { uuid } = useParams<{ uuid: string }>();
   const [result, setResult] = useState<RoiCalculationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reportEmail, setReportEmail] = useState('');
-  const [sendingReport, setSendingReport] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const stored = sessionStorage.getItem('eduroi-result');
@@ -66,17 +56,10 @@ const ResultsPage = () => {
       } catch {}
     }
 
-    // Fetch from backend if no session data
     if (uuid) {
       fetchSharedResult(uuid)
-        .then((data) => {
-          setResult(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err instanceof Error ? err.message : 'Could not load result.');
-          setLoading(false);
-        });
+        .then((data) => { setResult(data); setLoading(false); })
+        .catch((err) => { setError(err instanceof Error ? err.message : 'Could not load result.'); setLoading(false); });
     } else {
       setLoading(false);
     }
@@ -84,22 +67,22 @@ const ResultsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
-        <span className="ml-3 text-muted-foreground">Loading results...</span>
+      <div className="flex min-h-screen items-center justify-center results-dark-bg">
+        <Loader2 className="h-8 w-8 animate-spin text-[#C77DFF]" />
+        <span className="ml-3 text-white/50">Loading results...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="mx-auto max-w-md rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-          <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
-          <h2 className="mt-3 font-semibold text-foreground">Error Loading Result</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+      <div className="flex min-h-screen items-center justify-center results-dark-bg">
+        <div className="glass-card mx-auto max-w-md p-8 text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-[#FF7849]" />
+          <h2 className="mt-3 font-semibold text-white">Error Loading Result</h2>
+          <p className="mt-1 text-sm text-white/40">{error}</p>
           <Link to="/calculator">
-            <Button className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button className="mt-4 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 hover:opacity-90">
               New Calculation
             </Button>
           </Link>
@@ -110,12 +93,12 @@ const ResultsPage = () => {
 
   if (!result) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Result not found</h1>
-          <p className="mt-2 text-muted-foreground">This calculation may have expired.</p>
+      <div className="flex min-h-screen items-center justify-center results-dark-bg">
+        <div className="glass-card p-8 text-center">
+          <h1 className="text-2xl font-bold text-white">Result not found</h1>
+          <p className="mt-2 text-white/40">This calculation may have expired.</p>
           <Link to="/calculator">
-            <Button className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button className="mt-4 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 hover:opacity-90">
               New Calculation
             </Button>
           </Link>
@@ -125,7 +108,7 @@ const ResultsPage = () => {
   }
 
   const { roiResults, costBreakdown, incomeProjection, inputSummary, yearlyBreakdown, recommendations } = result;
-  const verdictCfg = VERDICT_CONFIG[roiResults.verdict];
+  const verdictDark = VERDICT_DARK[roiResults.verdict];
 
   const pieData = [
     { name: 'Tuition', value: costBreakdown.tuitionTotal },
@@ -135,220 +118,94 @@ const ResultsPage = () => {
     { name: 'Opportunity', value: costBreakdown.opportunityCost },
   ].filter(d => d.value > 0);
 
+  const metrics = [
+    { label: 'Net ROI', value: formatCurrency(roiResults.netRoi, inputSummary.currencySymbol), icon: TrendingUp, gradient: 'gradient-rose', glow: 'glow-rose', textGradient: 'text-gradient-rose' },
+    { label: 'ROI %', value: `${roiResults.roiPercentage}%`, icon: Percent, gradient: 'gradient-purple', glow: 'glow-purple', textGradient: 'text-gradient-purple' },
+    { label: 'Break-even', value: `${roiResults.breakEvenYears} yrs`, icon: Clock, gradient: 'gradient-mint', glow: 'glow-mint', textGradient: 'text-gradient-mint' },
+    { label: 'Annual Return', value: `${roiResults.annualizedReturn}%`, icon: BarChart3, gradient: 'gradient-blue', glow: 'glow-blue', textGradient: 'text-gradient-blue' },
+  ];
+
+  const summaryItems: [string, string][] = [
+    ['Total Cost', formatCurrency(costBreakdown.totalEducationCost, inputSummary.currencySymbol)],
+    ['Opportunity Cost', formatCurrency(costBreakdown.opportunityCost, inputSummary.currencySymbol)],
+    ['Lifetime Earnings', formatCurrency(incomeProjection.lifetimeEarnings, inputSummary.currencySymbol)],
+    ['Additional Earnings', formatCurrency(incomeProjection.additionalLifetimeEarnings, inputSummary.currencySymbol)],
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Metrics */}
-      <section className="gradient-hero py-12 md:py-16">
+    <div className="min-h-screen results-dark-bg">
+      {/* Hero */}
+      <section className="py-12 md:py-16">
         <div className="container max-w-5xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-            <p className="text-sm font-medium text-primary-foreground/60">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center">
+            <p className="text-sm font-medium text-white/40 tracking-wide uppercase">
               {inputSummary.degreeLevel} in {inputSummary.major} • {inputSummary.country}
             </p>
-            <h1 className="mt-2 text-3xl font-extrabold text-gradient-hero md:text-4xl">
-              Your Education ROI Analysis
+            <h1 className="mt-3 text-4xl font-extrabold text-white md:text-5xl tracking-tight">
+              Your Education <span className="text-gradient-purple">ROI Analysis</span>
             </h1>
 
-            <div className={`mx-auto mt-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${verdictCfg.bg} ${verdictCfg.color}`}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className={`mx-auto mt-5 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold ${verdictDark.bg} ${verdictDark.color} ${verdictDark.border}`}
+            >
               {roiResults.verdict === 'Excellent' || roiResults.verdict === 'Good' ? (
                 <TrendingUp className="h-4 w-4" />
               ) : (
                 <TrendingDown className="h-4 w-4" />
               )}
-              {verdictCfg.label}
-            </div>
+              {VERDICT_CONFIG[roiResults.verdict].label}
+            </motion.div>
           </motion.div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              { label: 'Net ROI', value: formatCurrency(roiResults.netRoi, inputSummary.currencySymbol), icon: TrendingUp },
-              { label: 'ROI %', value: `${roiResults.roiPercentage}%`, icon: Percent },
-              { label: 'Break-even', value: `${roiResults.breakEvenYears} yrs`, icon: Clock },
-              { label: 'Annual Return', value: `${roiResults.annualizedReturn}%`, icon: BarChart3 },
-            ].map((metric, i) => (
-              <motion.div
-                key={metric.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * i }}
-                className="rounded-xl bg-primary-foreground/10 p-4 text-center backdrop-blur-sm"
-              >
-                <metric.icon className="mx-auto mb-1 h-4 w-4 text-accent" />
-                <div className="text-xl font-extrabold text-primary-foreground md:text-2xl">{metric.value}</div>
-                <div className="text-xs text-primary-foreground/60">{metric.label}</div>
-              </motion.div>
+          {/* Metric Cards */}
+          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {metrics.map((m, i) => (
+              <MetricCard key={m.label} {...m} delay={0.15 + i * 0.1} />
             ))}
           </div>
         </div>
       </section>
 
-      <div className="container max-w-5xl py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Cost Breakdown Pie */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-lg font-bold text-foreground">Cost Breakdown</h2>
-              <p className="text-sm text-muted-foreground">
-                Total investment: {formatCurrency(costBreakdown.totalInvestment, inputSummary.currencySymbol)}
-              </p>
-              <div className="mt-4 h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" paddingAngle={2}>
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v, inputSummary.currencySymbol)} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Yearly Earnings Line Chart */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-lg font-bold text-foreground">Cumulative Position Over Time</h2>
-              <div className="mt-4 h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={yearlyBreakdown}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(214 32% 91%)" />
-                    <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                    <YAxis tickFormatter={(v) => formatCurrency(v)} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v, inputSummary.currencySymbol)} />
-                    <Legend />
-                    <Line type="monotone" dataKey="cumulativeEarnings" stroke="#0d9668" name="Earnings" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="cumulativeInvestment" stroke="#e53e3e" name="Investment" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="netPosition" stroke="#1a365d" name="Net Position" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
+      {/* Content */}
+      <div className="container max-w-5xl pb-12">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <CostBreakdownChart
+              data={pieData}
+              currencySymbol={inputSummary.currencySymbol}
+              totalInvestment={costBreakdown.totalInvestment}
+              formatCurrency={formatCurrency}
+            />
+            <EarningsChart
+              data={yearlyBreakdown}
+              currencySymbol={inputSummary.currencySymbol}
+              formatCurrency={formatCurrency}
+            />
             <AdSlot slot="below-results" />
-
-            {/* Recommendations */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                <Lightbulb className="h-5 w-5 text-gold" />
-                Recommendations
-              </h2>
-              <ul className="mt-4 space-y-3">
-                {recommendations.map((rec, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-muted-foreground">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" />
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <RecommendationsCard recommendations={recommendations} />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <h3 className="font-semibold text-foreground">Share Results</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Send this analysis to friends or advisors.</p>
-              <Button
-                className="mt-4 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => {
-                  const shareUrl = result.shareableUrl || window.location.href;
-                  navigator.clipboard.writeText(shareUrl).then(() => {
-                    toast({ title: 'Link copied!', description: 'Share this link with anyone to view your ROI analysis.' });
-                  }).catch(() => {
-                    toast({ title: 'Copy failed', description: 'Please copy the URL from your browser address bar.', variant: 'destructive' });
-                  });
-                }}
-              >
-                <Copy className="h-4 w-4" /> Copy Link
-              </Button>
-            </div>
-
+            <ShareCard shareableUrl={result.shareableUrl} />
+            <PdfDownloadCard uuid={result.uuid} />
             <AdSlot slot="sidebar" />
+            <SummaryCard items={summaryItems} />
 
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <h3 className="font-semibold text-foreground">Summary</h3>
-              <dl className="mt-4 space-y-3 text-sm">
-                {[
-                  ['Total Cost', formatCurrency(costBreakdown.totalEducationCost, inputSummary.currencySymbol)],
-                  ['Opportunity Cost', formatCurrency(costBreakdown.opportunityCost, inputSummary.currencySymbol)],
-                  ['Lifetime Earnings', formatCurrency(incomeProjection.lifetimeEarnings, inputSummary.currencySymbol)],
-                  ['Additional Earnings', formatCurrency(incomeProjection.additionalLifetimeEarnings, inputSummary.currencySymbol)],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex justify-between">
-                    <dt className="text-muted-foreground">{label}</dt>
-                    <dd className="font-medium text-foreground">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="rounded-xl border border-accent/30 bg-accent/5 p-6">
-              <h3 className="font-semibold text-foreground">Get Detailed Report</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Enter your email to receive a detailed analysis report.</p>
-              <input
-                type="email"
-                value={reportEmail}
-                onChange={(e) => setReportEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="mt-3 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent"
-              />
-              <Button
-                className="mt-2 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
-                disabled={sendingReport || !reportEmail.trim()}
-                onClick={() => {
-                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                  if (!emailRegex.test(reportEmail)) {
-                    toast({ title: 'Invalid email', description: 'Please enter a valid email address.', variant: 'destructive' });
-                    return;
-                  }
-                  setSendingReport(true);
-
-                  const subject = encodeURIComponent(`EduROI Report: ${inputSummary.degreeLevel} in ${inputSummary.major} – ${inputSummary.country}`);
-                  const body = encodeURIComponent(
-                    `EduROI Analysis Report\n` +
-                    `========================\n\n` +
-                    `Program: ${inputSummary.degreeLevel} in ${inputSummary.major}\n` +
-                    `Country: ${inputSummary.country}\n` +
-                    `University: ${inputSummary.university}\n` +
-                    `Duration: ${inputSummary.durationYears} years\n\n` +
-                    `ROI Results\n` +
-                    `-----------\n` +
-                    `Net ROI: ${formatCurrency(roiResults.netRoi, inputSummary.currencySymbol)}\n` +
-                    `ROI Percentage: ${roiResults.roiPercentage}%\n` +
-                    `Break-even: ${roiResults.breakEvenYears} years\n` +
-                    `Annualized Return: ${roiResults.annualizedReturn}%\n` +
-                    `Verdict: ${roiResults.verdict}\n\n` +
-                    `Cost Breakdown\n` +
-                    `--------------\n` +
-                    `Total Education Cost: ${formatCurrency(costBreakdown.totalEducationCost, inputSummary.currencySymbol)}\n` +
-                    `Opportunity Cost: ${formatCurrency(costBreakdown.opportunityCost, inputSummary.currencySymbol)}\n` +
-                    `Total Investment: ${formatCurrency(costBreakdown.totalInvestment, inputSummary.currencySymbol)}\n\n` +
-                    `Income Projection\n` +
-                    `-----------------\n` +
-                    `Lifetime Earnings: ${formatCurrency(incomeProjection.lifetimeEarnings, inputSummary.currencySymbol)}\n` +
-                    `Additional Earnings: ${formatCurrency(incomeProjection.additionalLifetimeEarnings, inputSummary.currencySymbol)}\n\n` +
-                    `Recommendations\n` +
-                    `---------------\n` +
-                    recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n') +
-                    `\n\nView full results: ${result.shareableUrl || window.location.href}\n` +
-                    `\nRequested by: ${reportEmail}\n` +
-                    `\n---\nGenerated by EduROI (https://eduroi.com)`
-                  );
-
-                  window.open(`mailto:codewithkaran723@gmail.com?subject=${subject}&body=${body}`, '_blank');
-                  toast({ title: 'Report ready!', description: 'Your email client will open with the report. Just hit send!' });
-                  setSendingReport(false);
-                }}
-              >
-                <Mail className="h-4 w-4" /> Send Report
-              </Button>
-            </div>
-
-            <Link to="/calculator">
-              <Button variant="outline" className="w-full gap-2">
-                New Calculation <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+            >
+              <Link to="/calculator">
+                <Button variant="outline" className="w-full gap-2 rounded-xl border-white/10 text-white/60 hover:bg-white/5 hover:text-white">
+                  New Calculation <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>
