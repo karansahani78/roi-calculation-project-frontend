@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { AmbientParticles } from '@/components/effects/AmbientParticles';
+import { FilmGrain } from '@/components/effects/FilmGrain';
 
 const FEATURES = [
   {
@@ -68,6 +70,8 @@ const Index = () => {
         {/* Ambient orbs */}
         <div className="ambient-orb w-[500px] h-[500px] bg-[#C77DFF] top-[-100px] right-[-100px]" />
         <div className="ambient-orb w-[400px] h-[400px] bg-[#4DD6C8] bottom-[0px] left-[-100px]" />
+        <AmbientParticles count={50} color="#C77DFF" maxOpacity={0.3} />
+        <FilmGrain opacity={0.025} />
 
         <div className="container relative py-24 md:py-32 lg:py-40">
           <div className="mx-auto max-w-3xl text-center">
