@@ -13,12 +13,15 @@ import {
   BarChart3,
   Loader2,
   AlertCircle,
+  Mail,
+  Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdSlot } from '@/components/ads/AdSlot';
 import type { RoiCalculationResponse } from '@/types/api';
 import { VERDICT_CONFIG } from '@/types/api';
 import { fetchSharedResult } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 import {
   PieChart,
   Pie,
@@ -46,6 +49,9 @@ const ResultsPage = () => {
   const [result, setResult] = useState<RoiCalculationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reportEmail, setReportEmail] = useState('');
+  const [sendingReport, setSendingReport] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const stored = sessionStorage.getItem('eduroi-result');
@@ -244,9 +250,16 @@ const ResultsPage = () => {
               <p className="mt-1 text-sm text-muted-foreground">Send this analysis to friends or advisors.</p>
               <Button
                 className="mt-4 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
+                onClick={() => {
+                  const shareUrl = result.shareableUrl || window.location.href;
+                  navigator.clipboard.writeText(shareUrl).then(() => {
+                    toast({ title: 'Link copied!', description: 'Share this link with anyone to view your ROI analysis.' });
+                  }).catch(() => {
+                    toast({ title: 'Copy failed', description: 'Please copy the URL from your browser address bar.', variant: 'destructive' });
+                  });
+                }}
               >
-                <Share2 className="h-4 w-4" /> Copy Link
+                <Copy className="h-4 w-4" /> Copy Link
               </Button>
             </div>
 
@@ -271,14 +284,63 @@ const ResultsPage = () => {
 
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-6">
               <h3 className="font-semibold text-foreground">Get Detailed Report</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Enter your email for a detailed PDF analysis.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Enter your email to receive a detailed analysis report.</p>
               <input
                 type="email"
+                value={reportEmail}
+                onChange={(e) => setReportEmail(e.target.value)}
                 placeholder="you@email.com"
                 className="mt-3 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent"
               />
-              <Button className="mt-2 w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                Send Report
+              <Button
+                className="mt-2 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+                disabled={sendingReport || !reportEmail.trim()}
+                onClick={() => {
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (!emailRegex.test(reportEmail)) {
+                    toast({ title: 'Invalid email', description: 'Please enter a valid email address.', variant: 'destructive' });
+                    return;
+                  }
+                  setSendingReport(true);
+
+                  const subject = encodeURIComponent(`EduROI Report: ${inputSummary.degreeLevel} in ${inputSummary.major} – ${inputSummary.country}`);
+                  const body = encodeURIComponent(
+                    `EduROI Analysis Report\n` +
+                    `========================\n\n` +
+                    `Program: ${inputSummary.degreeLevel} in ${inputSummary.major}\n` +
+                    `Country: ${inputSummary.country}\n` +
+                    `University: ${inputSummary.university}\n` +
+                    `Duration: ${inputSummary.durationYears} years\n\n` +
+                    `ROI Results\n` +
+                    `-----------\n` +
+                    `Net ROI: ${formatCurrency(roiResults.netRoi, inputSummary.currencySymbol)}\n` +
+                    `ROI Percentage: ${roiResults.roiPercentage}%\n` +
+                    `Break-even: ${roiResults.breakEvenYears} years\n` +
+                    `Annualized Return: ${roiResults.annualizedReturn}%\n` +
+                    `Verdict: ${roiResults.verdict}\n\n` +
+                    `Cost Breakdown\n` +
+                    `--------------\n` +
+                    `Total Education Cost: ${formatCurrency(costBreakdown.totalEducationCost, inputSummary.currencySymbol)}\n` +
+                    `Opportunity Cost: ${formatCurrency(costBreakdown.opportunityCost, inputSummary.currencySymbol)}\n` +
+                    `Total Investment: ${formatCurrency(costBreakdown.totalInvestment, inputSummary.currencySymbol)}\n\n` +
+                    `Income Projection\n` +
+                    `-----------------\n` +
+                    `Lifetime Earnings: ${formatCurrency(incomeProjection.lifetimeEarnings, inputSummary.currencySymbol)}\n` +
+                    `Additional Earnings: ${formatCurrency(incomeProjection.additionalLifetimeEarnings, inputSummary.currencySymbol)}\n\n` +
+                    `Recommendations\n` +
+                    `---------------\n` +
+                    recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n') +
+                    `\n\nView full results: ${result.shareableUrl || window.location.href}\n` +
+                    `\nRequested by: ${reportEmail}\n` +
+                    `\n---\nGenerated by EduROI (https://eduroi.com)`
+                  );
+
+                  window.open(`mailto:codewithkaran723@gmail.com?subject=${subject}&body=${body}`, '_blank');
+                  toast({ title: 'Report ready!', description: 'Your email client will open with the report. Just hit send!' });
+                  setSendingReport(false);
+                }}
+              >
+                <Mail className="h-4 w-4" /> Send Report
               </Button>
             </div>
 

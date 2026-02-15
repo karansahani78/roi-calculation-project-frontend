@@ -107,7 +107,7 @@ const TermsOfService = () => {
             <h2 className="text-xl font-semibold text-foreground">13. Contact Us</h2>
             <p className="mt-3">
               If you have any questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:legal@eduroi.com" className="text-accent underline hover:no-underline">legal@eduroi.com</a>.
+              <a href="mailto:codewithkaran723@gmail.com" className="text-accent underline hover:no-underline">codewithkaran723@gmail.com</a>.
             </p>
           </section>
         </div>
