@@ -9,6 +9,8 @@ import type {
   RoiCalculationRequest,
   RoiCalculationResponse,
   SeoPageDto,
+  CompareRequest,
+  CompareResponse,
 } from '@/types/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://143d-103-94-255-95.ngrok-free.app';
@@ -46,6 +48,10 @@ export const quickEstimateRoi = (req: RoiCalculationRequest) =>
   unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/quick-estimate', req));
 export const fetchSharedResult = (uuid: string) =>
   unwrap<RoiCalculationResponse>(client.get(`/api/v1/roi/share/${uuid}`));
+
+// Compare
+export const compareOptions = (req: CompareRequest) =>
+  unwrap<CompareResponse>(client.post('/api/v1/compare', req));
 
 // SEO Pages
 export const fetchSeoPages = () => unwrap<SeoPageDto[]>(client.get('/api/v1/seo/pages'));
