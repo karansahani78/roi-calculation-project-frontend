@@ -17,7 +17,7 @@ import type {
   CareerIntelligenceResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://e951-103-94-255-47.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://aac1-103-94-255-227.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
