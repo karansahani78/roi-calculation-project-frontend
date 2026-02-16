@@ -171,10 +171,19 @@ export interface SimulationRequest {
   costVariationPercent: number;
 }
 
+export interface SimulationScenario {
+  scenario: 'CONSERVATIVE' | 'EXPECTED' | 'OPTIMISTIC';
+  roiPercentage: number;
+  netRoi: number;
+  breakEvenYears: number;
+  confidenceScore: number;
+  insight: string;
+}
+
 export interface SimulationResponse {
-  conservative: RoiCalculationResponse;
-  expected: RoiCalculationResponse;
-  optimistic: RoiCalculationResponse;
+  uuid: string;
+  scenarios: SimulationScenario[];
+  summaryInsight: string;
 }
 
 // Career Intelligence
