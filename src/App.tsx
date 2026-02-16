@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import SeoPage from "./pages/SeoPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import DegreeWorthIt from "./pages/DegreeWorthIt";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/countries" element={<Countries />} />
                 <Route path="/majors" element={<Majors />} />
                 <Route path="/compare" element={<Compare />} />
+                <Route path="/insights/degree-worth-it" element={<DegreeWorthIt />} />
                 <Route path="/page/:slug" element={<SeoPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />

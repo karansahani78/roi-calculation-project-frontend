@@ -230,6 +230,25 @@ export interface DecisionConfidenceResponse {
   summary: string;
 }
 
+// Degree Worth It Insight
+export interface DegreeWorthItResponse {
+  pageTitle: string;
+  metaDescription: string;
+  canonicalUrl: string;
+  verdict: 'Worth It' | 'Depends' | 'Not Worth It';
+  confidenceLevel: string;
+  confidenceScore: number;
+  expectedRoi: number;
+  conservativeRoi: number;
+  optimisticRoi: number;
+  breakEvenYears: number;
+  marketOutlook: string;
+  employmentSummary: string;
+  expectedSalary: number;
+  keyInsights: string[];
+  finalConclusion: string;
+}
+
 // Verdict color mapping
 export const VERDICT_CONFIG = {
   Excellent: { color: 'text-accent', bg: 'bg-emerald-light', label: 'Excellent ROI' },
