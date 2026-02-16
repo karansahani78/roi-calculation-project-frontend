@@ -20,7 +20,7 @@ import type {
   DegreeWorthItResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://0d80-103-94-255-227.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://54cf-111-119-37-34.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -81,8 +81,17 @@ export const downloadRoiPdf = async (uuid: string): Promise<Blob> => {
 };
 
 // Insights
-export const fetchDegreeWorthIt = () =>
-  unwrap<DegreeWorthItResponse>(client.get('/api/v1/insights/degree-worth-it'));
+export const fetchDegreeWorthIt = (params: {
+  majorId: number;
+  countryCode: string;
+  currencyCode: string;
+}) =>
+  unwrap<DegreeWorthItResponse>(
+    client.get('/api/v1/insights/degree-worth-it', {
+      params,
+    })
+  );
+
 
 // SEO Pages
 export const fetchSeoPages = () => unwrap<SeoPageDto[]>(client.get('/api/v1/seo/pages'));

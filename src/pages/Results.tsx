@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -224,6 +225,42 @@ const ResultsPage = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* ─── DEGREE WORTH IT CTA ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.15, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="glass-card p-6 glow-mint text-center mt-6"
+        >
+          <div className="mx-auto flex max-w-xl flex-col items-center">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-1 text-sm font-semibold text-emerald-400">
+              <Sparkles className="h-4 w-4" />
+              Decision Insight
+            </div>
+
+            <h3 className="text-xl font-extrabold text-gradient-hero">
+              Is This Degree Actually Worth It?
+            </h3>
+
+            <p className="mt-2 text-sm leading-relaxed text-white/60">
+              Get a clear verdict based on ROI, downside risk, salary outcomes, and career demand —
+              explained in simple, human language.
+            </p>
+
+            <Link
+              to={`/insights/degree-worth-it?majorId=${baseRequest?.majorId}&countryCode=${baseRequest?.countryCode}&currencyCode=${inputSummary.currencyCode}`}
+            >
+              <Button
+                size="lg"
+                className="mt-5 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-hero px-6 text-sm font-semibold"
+              >
+                Check If It's Worth It <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Decision Confidence Score */}
         {baseRequest && (

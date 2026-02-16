@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
@@ -134,9 +135,21 @@ const RoiCard = ({ label, value, variant }: { label: string; value: number; vari
 
 /* ── Main Page ── */
 const DegreeWorthIt = () => {
+  const [searchParams] = useSearchParams();
+
+  const majorId = Number(searchParams.get('majorId'));
+  const countryCode = searchParams.get('countryCode');
+  const currencyCode = searchParams.get('currencyCode');
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['degree-worth-it'],
-    queryFn: fetchDegreeWorthIt,
+    queryKey: ['degree-worth-it', majorId, countryCode, currencyCode],
+    enabled: !!majorId && !!countryCode && !!currencyCode,
+    queryFn: () =>
+      fetchDegreeWorthIt({
+        majorId,
+        countryCode,
+        currencyCode,
+      }),
   });
 
   if (isLoading) {
