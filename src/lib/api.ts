@@ -19,7 +19,7 @@ import type {
   DecisionConfidenceResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://aac1-103-94-255-227.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://0a8a-103-94-255-227.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
