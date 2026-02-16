@@ -20,7 +20,7 @@ import type {
   DegreeWorthItResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://94af-111-119-37-34.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://24d4-111-119-37-34.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -53,8 +53,33 @@ export const calculateRoi = (req: RoiCalculationRequest) =>
   unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/calculate', req));
 export const quickEstimateRoi = (req: RoiCalculationRequest) =>
   unwrap<RoiCalculationResponse>(client.post('/api/v1/roi/quick-estimate', req));
-export const fetchSharedResult = (uuid: string) =>
-  unwrap<RoiCalculationResponse>(client.get(`/api/v1/roi/share/${uuid}`));
+
+export const fetchSharedResult = async (uuid: string) => {
+  const res = await client.get<ApiResponse<any>>(
+    `/api/v1/roi/share/${uuid}`
+  );
+
+  const outer = res.data;
+
+  if (!outer || !outer.success || !outer.data) {
+    throw new Error(outer?.message || 'Failed to load shared result');
+  }
+
+  // 🧠 HANDLE BOTH SHAPES
+  const payload = outer.data;
+
+  // Case A: already RoiCalculationResponse
+  if (payload.roiResults && payload.inputSummary) {
+    return payload as RoiCalculationResponse;
+  }
+
+  // Case B: nested ApiResponse<RoiCalculationResponse>
+  if (payload.success && payload.data?.roiResults) {
+    return payload.data as RoiCalculationResponse;
+  }
+
+  throw new Error('Invalid shared result structure');
+};
 
 // Simulation
 export const simulateRoi = (req: SimulationRequest) =>

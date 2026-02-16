@@ -73,7 +73,10 @@ const ResultsPage = () => {
 
     if (uuid) {
       fetchSharedResult(uuid)
-        .then((data) => { setResult(data); setLoading(false); })
+        .then((data) => {
+          setResult(data);
+          setLoading(false);
+        })
         .catch((err) => { setError(err instanceof Error ? err.message : 'Could not load result.'); setLoading(false); });
     } else {
       setLoading(false);
@@ -106,23 +109,24 @@ const ResultsPage = () => {
     );
   }
 
-  if (!result) {
+  if (!result || !result.roiResults || !result.inputSummary) {
     return (
       <div className="flex min-h-screen items-center justify-center results-dark-bg">
-        <div className="glass-card p-8 text-center">
-          <h1 className="text-2xl font-bold text-white">Result not found</h1>
-          <p className="mt-2 text-white/40">This calculation may have expired.</p>
-          <Link to="/calculator">
-            <Button className="mt-4 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 hover:opacity-90">
-              New Calculation
-            </Button>
-          </Link>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-[#C77DFF]" />
+        <span className="ml-3 text-white/50">Preparing results…</span>
       </div>
     );
   }
 
-  const { roiResults, costBreakdown, incomeProjection, inputSummary, yearlyBreakdown, recommendations } = result;
+  const {
+    roiResults,
+    costBreakdown,
+    incomeProjection,
+    inputSummary,
+    yearlyBreakdown,
+    recommendations,
+  } = result;
+
   const verdictDark = VERDICT_DARK[roiResults.verdict];
 
   const pieData = [
@@ -250,7 +254,7 @@ const ResultsPage = () => {
             </p>
 
             <Link
-              to={`/insights/degree-worth-it?majorId=${baseRequest?.majorId}&countryCode=${baseRequest?.countryCode}&currencyCode=${inputSummary.currencyCode}`}
+              to={`/degree-worth-it?majorId=${baseRequest?.majorId}&countryCode=${baseRequest?.countryCode}&currencyCode=${inputSummary.currencyCode}`}
             >
               <Button
                 size="lg"
