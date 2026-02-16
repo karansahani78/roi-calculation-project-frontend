@@ -352,31 +352,64 @@ const CalculatorPage = () => {
             )}
 
             {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
-                    <div className="gradient-mint inline-flex rounded-xl p-2">
-                      <Briefcase className="h-4 w-4 text-white" />
-                    </div>
-                    Income Details
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground ml-11">Enter your income expectations.</p>
-                </div>
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Expected Salary After Graduation</Label>
-                    <Input type="number" min={0} value={form.expectedSalaryAfter || ''} onChange={(e) => numUpdate('expectedSalaryAfter', e.target.value)} placeholder="e.g. 75000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Current Salary</Label>
-                    <Input type="number" min={0} value={form.currentSalary || ''} onChange={(e) => numUpdate('currentSalary', e.target.value)} placeholder="e.g. 30000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Part-time Income During Studies</Label>
-                    <Input type="number" min={0} value={form.partTimeIncomeAnnual || ''} onChange={(e) => numUpdate('partTimeIncomeAnnual', e.target.value)} placeholder="e.g. 8000" className="glass-input h-11" />
-                  </div>
-                </div>
-              </div>
+             <div className="space-y-6">
+             <div>
+               <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                 <div className="gradient-mint inline-flex rounded-xl p-2">
+                   <Briefcase className="h-4 w-4 text-white" />
+                 </div>
+                 Income Details
+               </h2>
+               <p className="mt-1 text-sm text-muted-foreground ml-11">
+                 Enter your <strong>annual</strong> income expectations (before tax).
+               </p>
+             </div>
+           
+             <div className="grid gap-5 md:grid-cols-2">
+               <div className="space-y-2">
+                 <Label className="text-sm text-muted-foreground">
+                   Expected Annual Salary After Graduation (Before Tax)
+                 </Label>
+                 <Input
+                   type="number"
+                   min={0}
+                   value={form.expectedSalaryAfter || ''}
+                   onChange={(e) => numUpdate('expectedSalaryAfter', e.target.value)}
+                   placeholder="e.g. 75000 per year"
+                   className="glass-input h-11"
+                 />
+               </div>
+           
+               <div className="space-y-2">
+                 <Label className="text-sm text-muted-foreground">
+                   Current Annual Salary (Before Tax)
+                 </Label>
+                 <Input
+                   type="number"
+                   min={0}
+                   value={form.currentSalary || ''}
+                   onChange={(e) => numUpdate('currentSalary', e.target.value)}
+                   placeholder="e.g. 30000 per year"
+                   className="glass-input h-11"
+                 />
+               </div>
+           
+               <div className="space-y-2">
+                 <Label className="text-sm text-muted-foreground">
+                   Part-time Income During Studies (Annual)
+                 </Label>
+                 <Input
+                   type="number"
+                   min={0}
+                   value={form.partTimeIncomeAnnual || ''}
+                   onChange={(e) => numUpdate('partTimeIncomeAnnual', e.target.value)}
+                   placeholder="e.g. 8000 per year"
+                   className="glass-input h-11"
+                 />
+               </div>
+             </div>
+           </div>
+           
             )}
 
             {step === 3 && (

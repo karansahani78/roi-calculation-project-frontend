@@ -228,6 +228,25 @@ const DegreeWorthIt = () => {
           </div>
         </section>
 
+        {/* ─── SEO INTRO CONTENT ─── */}
+        <section className="container pb-12">
+          <Section delay={0.05}>
+            <div className="mx-auto max-w-3xl prose prose-invert">
+              <h2>Is {data.pageTitle.replace('Is ', '').replace('?', '')}</h2>
+
+              <p>
+                Choosing a degree is both a financial and career decision. Many students ask whether
+                pursuing {data.pageTitle.replace('Is ', '').replace('?', '')} provides strong long-term value.
+              </p>
+
+              <p>
+                Based on return on investment analysis, expected salary outcomes, and current job market demand,
+                this degree shows <strong>{data.verdict.toLowerCase()}</strong> potential for most students.
+              </p>
+            </div>
+          </Section>
+        </section>
+
         <AdSlot slot="in-content" className="container mt-4" />
 
         {/* ─── 2. ROI SCENARIOS ─── */}
@@ -240,6 +259,26 @@ const DegreeWorthIt = () => {
               <RoiCard label="Conservative" value={data.conservativeRoi} variant="conservative" />
               <RoiCard label="Expected" value={data.expectedRoi} variant="expected" />
               <RoiCard label="Optimistic" value={data.optimisticRoi} variant="optimistic" />
+            </div>
+          </Section>
+        </section>
+
+        {/* ─── UNDERSTANDING ROI ─── */}
+        <section className="container pb-12">
+          <Section delay={0.1}>
+            <div className="mx-auto max-w-3xl prose prose-invert">
+              <h2>Understanding ROI for this Degree</h2>
+
+              <p>
+                ROI scenarios help evaluate risk and upside. Even under conservative assumptions,
+                this degree maintains a positive return, while optimistic scenarios show strong upside
+                driven by salary growth and market demand.
+              </p>
+
+              <p>
+                The expected ROI scenario represents the most realistic outcome for students entering
+                the workforce under normal economic conditions.
+              </p>
             </div>
           </Section>
         </section>
@@ -312,6 +351,24 @@ const DegreeWorthIt = () => {
           </Section>
         </section>
 
+        {/* ─── CAREER OUTLOOK EXPANDED ─── */}
+        <section className="container pb-16">
+          <Section delay={0.2}>
+            <div className="mx-auto max-w-3xl prose prose-invert">
+              <h2>Career Outlook and Job Market Demand</h2>
+
+              <p>{data.marketOutlook}</p>
+
+              <p>
+                From an employment perspective, graduates entering this field can expect roles
+                aligned with long-term industry demand and evolving skill requirements.
+              </p>
+
+              <p>{data.employmentSummary}</p>
+            </div>
+          </Section>
+        </section>
+
         {/* ─── 5. KEY INSIGHTS ─── */}
         {data.keyInsights && data.keyInsights.length > 0 && (
           <section className="container pb-16">
@@ -341,6 +398,33 @@ const DegreeWorthIt = () => {
         )}
 
         <AdSlot slot="below-results" className="container mb-8" />
+
+        {/* ─── FAQ SECTION ─── */}
+        <section className="container pb-16">
+          <Section delay={0.25}>
+            <div className="mx-auto max-w-3xl prose prose-invert">
+              <h2>Frequently Asked Questions</h2>
+
+              <h3>Is this degree hard?</h3>
+              <p>
+                Difficulty depends on background and commitment. Students with consistent practice
+                and interest in the subject generally perform well.
+              </p>
+
+              <h3>How long does it take to recover the investment?</h3>
+              <p>
+                Based on current projections, most students recover their education investment
+                in approximately {data.breakEvenYears} years.
+              </p>
+
+              <h3>Is this degree future-proof?</h3>
+              <p>
+                Market indicators suggest sustained demand due to technological growth
+                and industry-wide adoption.
+              </p>
+            </div>
+          </Section>
+        </section>
 
         {/* ─── 6. FINAL CONCLUSION ─── */}
         <section className="container pb-20">
