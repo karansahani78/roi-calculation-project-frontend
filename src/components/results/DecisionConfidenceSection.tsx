@@ -131,7 +131,7 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
 
   if (error || !data) return null;
 
-  const levelStyle = LEVEL_STYLE[data.confidenceLevel] ?? LEVEL_STYLE.Moderate;
+  const levelStyle = LEVEL_STYLE[data.confidenceLevel];
 
   return (
     <motion.section
