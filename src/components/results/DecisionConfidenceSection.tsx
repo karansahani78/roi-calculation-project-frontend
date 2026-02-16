@@ -1,21 +1,27 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, animate } from 'framer-motion';
-import { CheckCircle2, AlertTriangle, Loader2, Brain } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Loader2, Brain, ChevronDown, Share2 } from 'lucide-react';
 import { fetchDecisionConfidence } from '@/lib/api';
 import type { RoiCalculationRequest, DecisionConfidenceResponse } from '@/types/api';
+import { AdSlot } from '@/components/ads/AdSlot';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface Props {
   baseRequest: RoiCalculationRequest;
 }
 
 const LEVEL_STYLE = {
-  High: { bg: 'bg-[#4DD6C8]/12', text: 'text-[#4DD6C8]', border: 'border-[#4DD6C8]/20' },
-  Moderate: { bg: 'bg-[#FF9F43]/12', text: 'text-[#FF9F43]', border: 'border-[#FF9F43]/20' },
-  Low: { bg: 'bg-[#E89CA9]/12', text: 'text-[#E89CA9]', border: 'border-[#E89CA9]/20' },
+  VeryHigh: { label: 'Very High Confidence', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', emoji: '🚀' },
+  High:     { label: 'High Confidence',      bg: 'bg-green-500/10',   text: 'text-green-400',   border: 'border-green-500/20',   emoji: '✅' },
+  Moderate: { label: 'Moderate Confidence',   bg: 'bg-yellow-500/10',  text: 'text-yellow-400',  border: 'border-yellow-500/20',  emoji: '⚠️' },
+  Low:      { label: 'Low Confidence',        bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/20',  emoji: '❗' },
+  VeryLow:  { label: 'Very Low Confidence',   bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/20',     emoji: '⛔' },
 } as const;
 
 /** Animated arc gauge with gradient stroke */
-const ArcGauge = ({ score }: { score: number }) => {
+const ArcGauge = ({ score, levelText }: { score: number; levelText: string }) => {
   const [animated, setAnimated] = useState(0);
 
   useEffect(() => {
@@ -27,7 +33,6 @@ const ArcGauge = ({ score }: { score: number }) => {
     return () => ctrl.stop();
   }, [score]);
 
-  // Arc from 225° to -45° (270° sweep)
   const radius = 80;
   const cx = 100;
   const cy = 100;
@@ -45,7 +50,6 @@ const ArcGauge = ({ score }: { score: number }) => {
 
   const largeArc = sweepAngle > 180 ? 1 : 0;
 
-  // Track path (full arc background)
   const trackEnd = startAngle - totalSweep;
   const tx2 = cx + radius * Math.cos(toRad(trackEnd));
   const ty2 = cy - radius * Math.sin(toRad(trackEnd));
@@ -67,7 +71,6 @@ const ArcGauge = ({ score }: { score: number }) => {
             </feMerge>
           </filter>
         </defs>
-        {/* Track */}
         <path
           d={`M ${x1} ${y1} A ${radius} ${radius} 0 1 0 ${tx2} ${ty2}`}
           fill="none"
@@ -75,7 +78,6 @@ const ArcGauge = ({ score }: { score: number }) => {
           strokeWidth="10"
           strokeLinecap="round"
         />
-        {/* Value arc */}
         {animated > 0.5 && (
           <path
             d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 0 ${x2} ${y2}`}
@@ -87,7 +89,6 @@ const ArcGauge = ({ score }: { score: number }) => {
           />
         )}
       </svg>
-      {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
         <span className="text-5xl font-extrabold text-white tracking-tight">
           {Math.round(animated)}
@@ -102,6 +103,7 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
   const [data, setData] = useState<DecisionConfidenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -129,7 +131,7 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
 
   if (error || !data) return null;
 
-  const level = LEVEL_STYLE[data.confidenceLevel] ?? LEVEL_STYLE.Moderate;
+  const levelStyle = LEVEL_STYLE[data.confidenceLevel];
 
   return (
     <motion.section
@@ -165,62 +167,74 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
         whileHover={{ y: -3, boxShadow: '0 12px 48px rgba(199, 125, 255, 0.08)' }}
         className="glass-card p-8 md:p-10 relative overflow-hidden transition-all duration-300"
       >
-        {/* Ambient glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-48 rounded-full bg-[#C77DFF] opacity-[0.04] blur-[80px] pointer-events-none" />
 
         <div className="relative z-10 grid gap-10 md:grid-cols-2 items-center">
           {/* Left: gauge + badge */}
           <div className="flex flex-col items-center">
-            <ArcGauge score={data.confidenceScore} />
+            <ArcGauge score={data.confidenceScore} levelText={levelStyle.text} />
+
+            {/* Confidence badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.8, duration: 0.4 }}
-              className={`mt-4 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold ${level.bg} ${level.text} ${level.border}`}
+              className={`mt-4 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}
             >
-              {data.confidenceLevel} Confidence
+              <span className="text-lg">{levelStyle.emoji}</span>
+              {levelStyle.label}
             </motion.div>
+
+            {/* Ad after gauge */}
+            <AdSlot slot="in-content" className="mt-6 w-full max-w-xs" />
           </div>
 
           {/* Right: positives, risks, summary */}
           <div className="space-y-6">
             {/* Positives */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-3">Strengths</h4>
-              <ul className="space-y-2.5">
-                {data.positives.map((item, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex items-start gap-2.5"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-[#4DD6C8] mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-white/70 leading-relaxed">{item}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
+            {data.positives.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-3">✅ Strengths</h4>
+                <ul className="space-y-2.5">
+                  {data.positives.map((item, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex items-start gap-2.5"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-white/70 leading-relaxed">{item}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Ad between positives and risks */}
+            <AdSlot slot="in-content" className="w-full" />
 
             {/* Risks */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-3">Considerations</h4>
-              <ul className="space-y-2.5">
-                {data.risks.map((item, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex items-start gap-2.5"
-                  >
-                    <AlertTriangle className="h-4 w-4 text-[#FF9F43] mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-white/50 leading-relaxed">{item}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
+            {data.risks.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-3">⚠️ Considerations</h4>
+                <ul className="space-y-2.5">
+                  {data.risks.map((item, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6 + i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex items-start gap-2.5"
+                    >
+                      <AlertTriangle className="h-4 w-4 text-orange-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-white/50 leading-relaxed">{item}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Summary */}
             <motion.div
@@ -233,9 +247,52 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
                 {data.summary}
               </p>
             </motion.div>
+
+            {/* Ad after summary */}
+            <AdSlot slot="below-results" className="w-full" />
           </div>
         </div>
       </motion.div>
+
+      {/* Engagement hooks */}
+      <div className="mt-6 space-y-4">
+        {/* Expandable explanation */}
+        <Collapsible>
+          <CollapsibleTrigger className="glass-card w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-white/60 hover:text-white/80 transition-colors">
+            <span>Why this confidence score?</span>
+            <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="glass-card mt-1 px-6 py-4">
+            <p className="text-sm text-white/50 leading-relaxed">
+              Your Decision Confidence Score is calculated by our backend engine based on multiple factors including ROI strength, market demand for your major, cost-to-earnings ratio, and regional economic indicators. A score of <strong className="text-white/70">{data.confidenceScore}/100</strong> with <strong className={levelStyle.text}>{levelStyle.label}</strong> means the data supports this education investment at that level.
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Share & comparison CTAs */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Button
+            variant="outline"
+            className="gap-2 rounded-xl border-white/[0.08] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06]"
+            onClick={() => {
+              const url = window.location.href;
+              navigator.clipboard.writeText(url).then(() => {
+                toast({ title: 'Link copied!', description: 'Share your decision confidence score with others.' });
+              });
+            }}
+          >
+            <Share2 className="h-4 w-4" />
+            Share your decision score
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2 rounded-xl border-white/[0.08] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06]"
+            onClick={() => window.open('/compare', '_self')}
+          >
+            📊 See how others scored with similar choices
+          </Button>
+        </div>
+      </div>
     </motion.section>
   );
 };
