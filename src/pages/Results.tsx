@@ -25,6 +25,7 @@ import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
 import { SummaryCard } from '@/components/results/SummaryCard';
 import { SimulationSection } from '@/components/results/SimulationSection';
 import { CareerIntelligencePanel } from '@/components/results/CareerIntelligencePanel';
+import { DecisionConfidenceSection } from '@/components/results/DecisionConfidenceSection';
 import { AmbientParticles } from '@/components/effects/AmbientParticles';
 import { FilmGrain } from '@/components/effects/FilmGrain';
 
@@ -223,6 +224,11 @@ const ResultsPage = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Decision Confidence Score */}
+        {baseRequest && (
+          <DecisionConfidenceSection baseRequest={baseRequest} />
+        )}
 
         {/* Simulation Section */}
         {baseRequest && (

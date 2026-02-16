@@ -15,6 +15,8 @@ import type {
   SimulationResponse,
   CareerIntelligenceRequest,
   CareerIntelligenceResponse,
+  DecisionConfidenceRequest,
+  DecisionConfidenceResponse,
 } from '@/types/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://aac1-103-94-255-227.ngrok-free.app';
@@ -64,6 +66,10 @@ export const compareOptions = (req: CompareRequest) =>
 // Career Intelligence
 export const fetchCareerIntelligence = (req: CareerIntelligenceRequest) =>
   unwrap<CareerIntelligenceResponse>(client.post('/api/v1/career/intelligence', req));
+
+// Decision Confidence
+export const fetchDecisionConfidence = (req: DecisionConfidenceRequest) =>
+  unwrap<DecisionConfidenceResponse>(client.post('/api/v1/decision/confidence', req));
 
 // PDF Report
 export const downloadRoiPdf = async (uuid: string): Promise<Blob> => {

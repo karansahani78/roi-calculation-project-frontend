@@ -219,6 +219,17 @@ export interface CareerIntelligenceResponse {
   insight: string;
 }
 
+// Decision Confidence
+export interface DecisionConfidenceRequest extends RoiCalculationRequest {}
+
+export interface DecisionConfidenceResponse {
+  confidenceScore: number;
+  confidenceLevel: 'High' | 'Moderate' | 'Low';
+  positives: string[];
+  risks: string[];
+  summary: string;
+}
+
 // Verdict color mapping
 export const VERDICT_CONFIG = {
   Excellent: { color: 'text-accent', bg: 'bg-emerald-light', label: 'Excellent ROI' },
