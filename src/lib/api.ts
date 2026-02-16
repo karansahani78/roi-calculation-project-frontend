@@ -17,6 +17,7 @@ import type {
   CareerIntelligenceResponse,
   DecisionConfidenceRequest,
   DecisionConfidenceResponse,
+  DegreeWorthItResponse,
 } from '@/types/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://0d80-103-94-255-227.ngrok-free.app';
@@ -78,6 +79,10 @@ export const downloadRoiPdf = async (uuid: string): Promise<Blob> => {
   });
   return data;
 };
+
+// Insights
+export const fetchDegreeWorthIt = () =>
+  unwrap<DegreeWorthItResponse>(client.get('/api/v1/insights/degree-worth-it'));
 
 // SEO Pages
 export const fetchSeoPages = () => unwrap<SeoPageDto[]>(client.get('/api/v1/seo/pages'));
