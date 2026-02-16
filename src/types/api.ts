@@ -224,7 +224,7 @@ export interface DecisionConfidenceRequest extends RoiCalculationRequest {}
 
 export interface DecisionConfidenceResponse {
   confidenceScore: number;
-  confidenceLevel: 'VeryLow' | 'Low' | 'Moderate' | 'High' | 'VeryHigh';
+  confidenceLevel: string;
   positives: string[];
   risks: string[];
   summary: string;

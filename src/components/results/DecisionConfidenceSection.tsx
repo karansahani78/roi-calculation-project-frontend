@@ -13,12 +13,20 @@ interface Props {
 }
 
 const LEVEL_STYLE = {
-  VeryHigh: { label: 'Very High Confidence', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', emoji: '🚀' },
-  High:     { label: 'High Confidence',      bg: 'bg-green-500/10',   text: 'text-green-400',   border: 'border-green-500/20',   emoji: '✅' },
-  Moderate: { label: 'Moderate Confidence',   bg: 'bg-yellow-500/10',  text: 'text-yellow-400',  border: 'border-yellow-500/20',  emoji: '⚠️' },
-  Low:      { label: 'Low Confidence',        bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/20',  emoji: '❗' },
-  VeryLow:  { label: 'Very Low Confidence',   bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/20',     emoji: '⛔' },
+  HIGH:     { label: 'High Confidence',     bg: 'bg-green-500/20',  text: 'text-green-400',  border: 'border-green-500/20',  emoji: '✅' },
+  MODERATE: { label: 'Moderate Confidence', bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/20', emoji: '⚠️' },
+  LOW:      { label: 'Low Confidence',      bg: 'bg-red-500/20',    text: 'text-red-400',    border: 'border-red-500/20',    emoji: '❌' },
 } as const;
+
+type NormalizedLevel = keyof typeof LEVEL_STYLE;
+
+const normalizeLevel = (level?: string): NormalizedLevel => {
+  if (!level) return 'MODERATE';
+  const lower = level.toLowerCase();
+  if (lower.includes('high')) return 'HIGH';
+  if (lower.includes('low')) return 'LOW';
+  return 'MODERATE';
+};
 
 /** Animated arc gauge with gradient stroke */
 const ArcGauge = ({ score, levelText }: { score: number; levelText: string }) => {
@@ -131,7 +139,8 @@ export const DecisionConfidenceSection = ({ baseRequest }: Props) => {
 
   if (error || !data) return null;
 
-  const levelStyle = LEVEL_STYLE[data.confidenceLevel];
+  const normalizedLevel = normalizeLevel(data.confidenceLevel);
+  const levelStyle = LEVEL_STYLE[normalizedLevel];
 
   return (
     <motion.section
