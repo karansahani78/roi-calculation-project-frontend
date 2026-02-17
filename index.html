@@ -2,27 +2,76 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future.">
-    <meta name="author" content="Lovable" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/abffdff3-9bac-4914-8e40-79dd8085876a/id-preview-69a691fe--29f28acf-b2cf-43b2-a6fe-dba4bd63b5ad.lovable.app-1771183460878.png">
+    <!--
+      CHANGE: Added viewport-fit=cover
+      REASON: Enables env(safe-area-inset-*) CSS variables on iOS notch /
+              Dynamic Island / iPad home indicator. No scroll impact.
+      CHANGE: Added interactive-widget=resizes-content
+      REASON: Tells Android Chrome to resize content (not viewport) when the
+              soft keyboard opens. Prevents scroll jump / layout shift.
+              Does NOT affect desktop or iOS scroll.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/abffdff3-9bac-4914-8e40-79dd8085876a/id-preview-69a691fe--29f28acf-b2cf-43b2-a6fe-dba4bd63b5ad.lovable.app-1771183460878.png">
-    <meta property="og:title" content="Lovable App">
-  <meta name="twitter:title" content="Lovable App">
-  <meta property="og:description" content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future.">
-  <meta name="twitter:description" content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future.">
-</head>
+    <!--
+      CHANGE: theme-color
+      REASON: Tints Android Chrome browser chrome to match app background.
+              Zero layout / scroll impact.
+    -->
+    <meta name="theme-color" content="#0B0F14" />
+    <meta name="theme-color" content="#0B0F14" media="(prefers-color-scheme: dark)" />
 
+    <!--
+      CHANGE: iOS standalone meta tags
+      REASON: Ensures proper display when added to iOS home screen.
+              black-translucent status bar + viewport-fit=cover =
+              full-bleed dark background under notch. No scroll impact.
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- ── SEO: title + description updated from placeholder ─────────────── -->
+    <title>CareerScope — College Major ROI & Salary Calculator</title>
+    <meta
+      name="description"
+      content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future."
+    />
+    <meta name="author" content="CareerScope" />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+    <link rel="canonical" href="https://yourdomain.com/" />
+
+    <!-- ── Open Graph ─────────────────────────────────────────────────────── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://yourdomain.com/" />
+    <meta property="og:title"       content="CareerScope — College Major ROI & Salary Calculator" />
+    <meta property="og:description" content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future." />
+    <meta property="og:image"       content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/abffdff3-9bac-4914-8e40-79dd8085876a/id-preview-69a691fe--29f28acf-b2cf-43b2-a6fe-dba4bd63b5ad.lovable.app-1771183460878.png" />
+    <meta property="og:site_name"   content="CareerScope" />
+
+    <!-- ── Twitter Card ───────────────────────────────────────────────────── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@CareerScope" />
+    <meta name="twitter:title"       content="CareerScope — College Major ROI & Salary Calculator" />
+    <meta name="twitter:description" content="Calculate the true return on your education investment. Compare universities, majors, and countries to make data-driven decisions about your future." />
+    <meta name="twitter:image"       content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/abffdff3-9bac-4914-8e40-79dd8085876a/id-preview-69a691fe--29f28acf-b2cf-43b2-a6fe-dba4bd63b5ad.lovable.app-1771183460878.png" />
+
+    <!--
+      AdSense auto-ads — head placement for best fill rate.
+      REPLACE ca-pub-XXXXXXXXXXXXXXXX with your real publisher ID.
+    -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+      crossorigin="anonymous"
+    ></script>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

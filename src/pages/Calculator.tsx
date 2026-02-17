@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, GraduationCap, DollarSign, Briefcase, Settings2, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, GraduationCap, DollarSign, Briefcase, Settings2, Loader2, AlertCircle, Shield, TrendingUp, Users, Star, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { fetchCountries, fetchMajors, fetchDegreeLevels, fetchCurrencies, fetchUniversities, calculateRoi } from '@/lib/api';
+import { AdSlot } from '@/components/ads/AdSlot';
 import type { RoiCalculationRequest, CountryDto } from '@/types/api';
 
 const STEPS = [
@@ -160,350 +162,460 @@ const CalculatorPage = () => {
   const currentStep = STEPS[step];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="ambient-orb w-[400px] h-[400px] bg-[#C77DFF] top-[-100px] right-[-150px]" />
-      <div className="ambient-orb w-[300px] h-[300px] bg-[#4DD6C8] bottom-[-50px] left-[-100px]" />
+    <>
+      {/* ── SEO ── */}
+      <Helmet>
+        <title>Free Education ROI Calculator – Is Your Degree Worth It? | EduROI</title>
+        <meta name="description" content="Calculate the return on investment for any degree in under 2 minutes. Our free education ROI calculator shows net ROI, break-even years, lifetime earnings, and career outlook across 50+ countries." />
+        <link rel="canonical" href="https://eduroi.com/calculator" />
+        <meta property="og:title" content="Free Education ROI Calculator – EduROI" />
+        <meta property="og:description" content="Calculate the true ROI of your degree in under 2 minutes. Compare costs, salaries, and break-even timelines." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://eduroi.com/calculator" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Free Education ROI Calculator – EduROI" />
+        <meta name="twitter:description" content="Calculate the true ROI of your degree in under 2 minutes." />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'EduROI Education ROI Calculator',
+            url: 'https://eduroi.com/calculator',
+            description: 'Free education return on investment calculator. Calculate net ROI, break-even years, and lifetime earnings for any degree.',
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            featureList: [
+              'Education ROI calculation',
+              'Break-even timeline analysis',
+              'Lifetime earnings projection',
+              'Career outlook insights',
+              'Multi-country support',
+              'Shareable results',
+            ],
+          })}
+        </script>
+      </Helmet>
 
-      <div className="container relative max-w-3xl py-10 md:py-14">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center"
-        >
-          <h1 className="text-3xl font-extrabold text-foreground md:text-4xl tracking-tight">
-            Education <span className="text-gradient-purple">ROI Calculator</span>
-          </h1>
-          <p className="mt-2 text-muted-foreground">Calculate the return on your education investment</p>
-        </motion.div>
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Ambient orbs */}
+        <div className="ambient-orb w-[400px] h-[400px] bg-[#C77DFF] top-[-100px] right-[-150px]" />
+        <div className="ambient-orb w-[300px] h-[300px] bg-[#4DD6C8] bottom-[-50px] left-[-100px]" />
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {STEPS.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => i <= step && setStep(i)}
-                className="flex flex-1 flex-col items-center gap-1.5 text-xs font-medium transition-all duration-300"
-              >
-                <motion.div
-                  animate={{
-                    scale: i === step ? 1.1 : 1,
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
-                    i < step
-                      ? `${s.gradient} shadow-lg`
-                      : i === step
-                      ? `${s.gradient} shadow-lg`
-                      : 'bg-white/[0.05] border border-white/[0.08]'
-                  }`}
-                  style={i <= step ? { boxShadow: `0 0 20px ${s.color}30` } : {}}
-                >
-                  <s.icon className={`h-4.5 w-4.5 ${i <= step ? 'text-white' : 'text-muted-foreground'}`} />
-                </motion.div>
-                <span className={`hidden sm:inline transition-colors duration-300 ${
-                  i <= step ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {s.label}
-                </span>
-              </button>
-            ))}
-          </div>
-          {/* Progress bar */}
-          <div className="mt-4 h-1 rounded-full bg-white/[0.05]">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7]"
-              initial={false}
-              animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            />
-          </div>
-        </div>
-
-        {/* Form Card */}
-        <AnimatePresence mode="wait">
+        <div className="container relative max-w-3xl py-10 md:py-14">
+          {/* Header */}
           <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 30, scale: 0.98 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -30, scale: 0.98 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card p-7 md:p-9"
-          >
-            {step === 0 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
-                    <div className="gradient-purple inline-flex rounded-xl p-2">
-                      <GraduationCap className="h-4 w-4 text-white" />
-                    </div>
-                    Education Details
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground ml-11">Tell us about your education plans.</p>
-                </div>
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Country</Label>
-                    <Select value={form.countryCode || ''} onValueChange={(v) => update('countryCode', v)}>
-                      <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select country" /></SelectTrigger>
-                      <SelectContent>
-                        {countries && countries.length > 0 ? countries.map(c => (
-                          <SelectItem key={c.id} value={c.code}>{c.name}</SelectItem>
-                        )) : (
-                          <SelectItem value="_none" disabled>No countries available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">University (optional)</Label>
-                    <Select
-                      value={form.universityId ? String(form.universityId) : ''}
-                      onValueChange={(v) => update('universityId', parseInt(v))}
-                      disabled={!selectedCountry}
-                    >
-                      <SelectTrigger className="glass-input h-11"><SelectValue placeholder={selectedCountry ? "Select university" : "Select country first"} /></SelectTrigger>
-                      <SelectContent>
-                        {universities && universities.length > 0 ? universities.map(u => (
-                          <SelectItem key={u.id} value={String(u.id)}>{u.name} — {u.city}</SelectItem>
-                        )) : (
-                          <SelectItem value="_none" disabled>No universities available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Major</Label>
-                    <Select value={form.majorId ? String(form.majorId) : ''} onValueChange={(v) => update('majorId', parseInt(v))}>
-                      <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select major" /></SelectTrigger>
-                      <SelectContent>
-                        {majors && majors.length > 0 ? majors.map(m => (
-                          <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
-                        )) : (
-                          <SelectItem value="_none" disabled>No majors available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Degree Level</Label>
-                    <Select value={form.degreeLevelId ? String(form.degreeLevelId) : ''} onValueChange={(v) => {
-                      const deg = degreeLevels?.find(d => d.id === parseInt(v));
-                      setForm(prev => ({ ...prev, degreeLevelId: parseInt(v), durationYears: deg?.typicalDurationYears || 4 }));
-                    }}>
-                      <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select degree" /></SelectTrigger>
-                      <SelectContent>
-                        {degreeLevels && degreeLevels.length > 0 ? degreeLevels.map(d => (
-                          <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                        )) : (
-                          <SelectItem value="_none" disabled>No degree levels available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Duration (years)</Label>
-                    <Input type="number" min={1} max={10} value={form.durationYears || ''} onChange={(e) => numUpdate('durationYears', e.target.value)} className="glass-input h-11" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === 1 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
-                    <div className="gradient-orange inline-flex rounded-xl p-2">
-                      <DollarSign className="h-4 w-4 text-white" />
-                    </div>
-                    Cost Details
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground ml-11">Enter your expected education costs.</p>
-                </div>
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Annual Tuition</Label>
-                    <Input type="number" min={0} value={form.tuitionAnnual || ''} onChange={(e) => numUpdate('tuitionAnnual', e.target.value)} placeholder="e.g. 25000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Annual Living Cost</Label>
-                    <Input type="number" min={0} value={form.livingCostAnnual || ''} onChange={(e) => numUpdate('livingCostAnnual', e.target.value)} placeholder="e.g. 15000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Other Annual Costs</Label>
-                    <Input type="number" min={0} value={form.otherCostsAnnual || ''} onChange={(e) => numUpdate('otherCostsAnnual', e.target.value)} placeholder="e.g. 3000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Loan Amount</Label>
-                    <Input type="number" min={0} value={form.loanAmount || ''} onChange={(e) => numUpdate('loanAmount', e.target.value)} placeholder="e.g. 50000" className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Interest Rate (%)</Label>
-                    <Input type="number" min={0} max={30} step={0.1} value={form.interestRate || ''} onChange={(e) => numUpdate('interestRate', e.target.value)} className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Loan Term (years)</Label>
-                    <Input type="number" min={1} max={30} value={form.loanTermYears || ''} onChange={(e) => numUpdate('loanTermYears', e.target.value)} className="glass-input h-11" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-             <div className="space-y-6">
-             <div>
-               <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
-                 <div className="gradient-mint inline-flex rounded-xl p-2">
-                   <Briefcase className="h-4 w-4 text-white" />
-                 </div>
-                 Income Details
-               </h2>
-               <p className="mt-1 text-sm text-muted-foreground ml-11">
-                 Enter your <strong>annual</strong> income expectations (before tax).
-               </p>
-             </div>
-           
-             <div className="grid gap-5 md:grid-cols-2">
-               <div className="space-y-2">
-                 <Label className="text-sm text-muted-foreground">
-                   Expected Annual Salary After Graduation (Before Tax)
-                 </Label>
-                 <Input
-                   type="number"
-                   min={0}
-                   value={form.expectedSalaryAfter || ''}
-                   onChange={(e) => numUpdate('expectedSalaryAfter', e.target.value)}
-                   placeholder="e.g. 75000 per year"
-                   className="glass-input h-11"
-                 />
-               </div>
-           
-               <div className="space-y-2">
-                 <Label className="text-sm text-muted-foreground">
-                   Current Annual Salary (Before Tax)
-                 </Label>
-                 <Input
-                   type="number"
-                   min={0}
-                   value={form.currentSalary || ''}
-                   onChange={(e) => numUpdate('currentSalary', e.target.value)}
-                   placeholder="e.g. 30000 per year"
-                   className="glass-input h-11"
-                 />
-               </div>
-           
-               <div className="space-y-2">
-                 <Label className="text-sm text-muted-foreground">
-                   Part-time Income During Studies (Annual)
-                 </Label>
-                 <Input
-                   type="number"
-                   min={0}
-                   value={form.partTimeIncomeAnnual || ''}
-                   onChange={(e) => numUpdate('partTimeIncomeAnnual', e.target.value)}
-                   placeholder="e.g. 8000 per year"
-                   className="glass-input h-11"
-                 />
-               </div>
-             </div>
-           </div>
-           
-            )}
-
-            {step === 3 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
-                    <div className="gradient-blue inline-flex rounded-xl p-2">
-                      <Settings2 className="h-4 w-4 text-white" />
-                    </div>
-                    Advanced Settings
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground ml-11">Fine-tune your calculation parameters.</p>
-                </div>
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Tax Rate (%)</Label>
-                    <Input type="number" min={0} max={60} value={form.taxRate || ''} onChange={(e) => numUpdate('taxRate', e.target.value)} className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Inflation Rate (%)</Label>
-                    <Input type="number" min={0} max={20} step={0.1} value={form.inflationRate || ''} onChange={(e) => numUpdate('inflationRate', e.target.value)} className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Calculation Period (years)</Label>
-                    <Input type="number" min={5} max={50} value={form.calculationYears || ''} onChange={(e) => numUpdate('calculationYears', e.target.value)} className="glass-input h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Currency</Label>
-                    <Select value={form.currencyCode || 'USD'} onValueChange={(v) => update('currencyCode', v)}>
-                      <SelectTrigger className="glass-input h-11"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {currencies && currencies.length > 0 ? currencies.map(c => (
-                          <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</SelectItem>
-                        )) : (
-                          <SelectItem value="_none" disabled>No currencies available</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Submit Error */}
-        {submitError && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 glass-card border-[#FF7849]/20 p-4 text-sm text-[#FF7849]"
+            className="mb-10 text-center"
           >
-            {submitError}
+            <h1 className="text-3xl font-extrabold text-foreground md:text-4xl tracking-tight">
+              Education <span className="text-gradient-purple">ROI Calculator</span>
+            </h1>
+            <p className="mt-2 text-muted-foreground">Calculate the return on your education investment</p>
+
+            {/* ── Trust Signals ── */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-accent" />Free & No Registration</span>
+              <span className="flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5 text-accent" />Real Market Data</span>
+              <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-accent" />50+ Countries</span>
+              <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-accent" />Instant Results</span>
+            </div>
           </motion.div>
-        )}
 
-        {/* Navigation */}
-        <div className="mt-6 flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={() => setStep(s => s - 1)}
-            disabled={step === 0}
-            className="gap-2 rounded-xl border-white/[0.1] text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Button>
+          {/* ── Ad above calculator ── */}
+          <AdSlot slot="in-content" className="mb-8" />
 
-          {step < STEPS.length - 1 ? (
-            <Button
-              onClick={() => setStep(s => s + 1)}
-              disabled={!canNext()}
-              className="gap-2 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20"
+          {/* Progress Steps */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {STEPS.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => i <= step && setStep(i)}
+                  className="flex flex-1 flex-col items-center gap-1.5 text-xs font-medium transition-all duration-300"
+                >
+                  <motion.div
+                    animate={{ scale: i === step ? 1.1 : 1 }}
+                    transition={{ duration: 0.3 }}
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+                      i < step
+                        ? `${s.gradient} shadow-lg`
+                        : i === step
+                        ? `${s.gradient} shadow-lg`
+                        : 'bg-white/[0.05] border border-white/[0.08]'
+                    }`}
+                    style={i <= step ? { boxShadow: `0 0 20px ${s.color}30` } : {}}
+                  >
+                    <s.icon className={`h-4.5 w-4.5 ${i <= step ? 'text-white' : 'text-muted-foreground'}`} />
+                  </motion.div>
+                  <span className={`hidden sm:inline transition-colors duration-300 ${
+                    i <= step ? 'text-foreground' : 'text-muted-foreground'
+                  }`}>
+                    {s.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {/* Progress bar */}
+            <div className="mt-4 h-1 rounded-full bg-white/[0.05]">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7]"
+                initial={false}
+                animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </div>
+          </div>
+
+          {/* Form Card */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 30, scale: 0.98 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.98 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="glass-card p-7 md:p-9"
             >
-              Next <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="gap-2 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 px-8 font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Calculating...
-                </span>
-              ) : (
-                <>Calculate ROI <ArrowRight className="h-4 w-4" /></>
+              {step === 0 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                      <div className="gradient-purple inline-flex rounded-xl p-2">
+                        <GraduationCap className="h-4 w-4 text-white" />
+                      </div>
+                      Education Details
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground ml-11">Tell us about your education plans.</p>
+                  </div>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Country</Label>
+                      <Select value={form.countryCode || ''} onValueChange={(v) => update('countryCode', v)}>
+                        <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select country" /></SelectTrigger>
+                        <SelectContent>
+                          {countries && countries.length > 0 ? countries.map(c => (
+                            <SelectItem key={c.id} value={c.code}>{c.name}</SelectItem>
+                          )) : (
+                            <SelectItem value="_none" disabled>No countries available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">University (optional)</Label>
+                      <Select
+                        value={form.universityId ? String(form.universityId) : ''}
+                        onValueChange={(v) => update('universityId', parseInt(v))}
+                        disabled={!selectedCountry}
+                      >
+                        <SelectTrigger className="glass-input h-11"><SelectValue placeholder={selectedCountry ? "Select university" : "Select country first"} /></SelectTrigger>
+                        <SelectContent>
+                          {universities && universities.length > 0 ? universities.map(u => (
+                            <SelectItem key={u.id} value={String(u.id)}>{u.name} — {u.city}</SelectItem>
+                          )) : (
+                            <SelectItem value="_none" disabled>No universities available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Major</Label>
+                      <Select value={form.majorId ? String(form.majorId) : ''} onValueChange={(v) => update('majorId', parseInt(v))}>
+                        <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select major" /></SelectTrigger>
+                        <SelectContent>
+                          {majors && majors.length > 0 ? majors.map(m => (
+                            <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                          )) : (
+                            <SelectItem value="_none" disabled>No majors available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Degree Level</Label>
+                      <Select value={form.degreeLevelId ? String(form.degreeLevelId) : ''} onValueChange={(v) => {
+                        const deg = degreeLevels?.find(d => d.id === parseInt(v));
+                        setForm(prev => ({ ...prev, degreeLevelId: parseInt(v), durationYears: deg?.typicalDurationYears || 4 }));
+                      }}>
+                        <SelectTrigger className="glass-input h-11"><SelectValue placeholder="Select degree" /></SelectTrigger>
+                        <SelectContent>
+                          {degreeLevels && degreeLevels.length > 0 ? degreeLevels.map(d => (
+                            <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                          )) : (
+                            <SelectItem value="_none" disabled>No degree levels available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Duration (years)</Label>
+                      <Input type="number" min={1} max={10} value={form.durationYears || ''} onChange={(e) => numUpdate('durationYears', e.target.value)} className="glass-input h-11" />
+                    </div>
+                  </div>
+                </div>
               )}
-            </Button>
+
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                      <div className="gradient-orange inline-flex rounded-xl p-2">
+                        <DollarSign className="h-4 w-4 text-white" />
+                      </div>
+                      Cost Details
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground ml-11">Enter your expected education costs.</p>
+                  </div>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Annual Tuition</Label>
+                      <Input type="number" min={0} value={form.tuitionAnnual || ''} onChange={(e) => numUpdate('tuitionAnnual', e.target.value)} placeholder="e.g. 25000" className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Annual Living Cost</Label>
+                      <Input type="number" min={0} value={form.livingCostAnnual || ''} onChange={(e) => numUpdate('livingCostAnnual', e.target.value)} placeholder="e.g. 15000" className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Other Annual Costs</Label>
+                      <Input type="number" min={0} value={form.otherCostsAnnual || ''} onChange={(e) => numUpdate('otherCostsAnnual', e.target.value)} placeholder="e.g. 3000" className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Loan Amount</Label>
+                      <Input type="number" min={0} value={form.loanAmount || ''} onChange={(e) => numUpdate('loanAmount', e.target.value)} placeholder="e.g. 50000" className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Interest Rate (%)</Label>
+                      <Input type="number" min={0} max={30} step={0.1} value={form.interestRate || ''} onChange={(e) => numUpdate('interestRate', e.target.value)} className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Loan Term (years)</Label>
+                      <Input type="number" min={1} max={30} value={form.loanTermYears || ''} onChange={(e) => numUpdate('loanTermYears', e.target.value)} className="glass-input h-11" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                      <div className="gradient-mint inline-flex rounded-xl p-2">
+                        <Briefcase className="h-4 w-4 text-white" />
+                      </div>
+                      Income Details
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground ml-11">
+                      Enter your <strong>annual</strong> income expectations (before tax).
+                    </p>
+                  </div>
+
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Expected Annual Salary After Graduation (Before Tax)
+                      </Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={form.expectedSalaryAfter || ''}
+                        onChange={(e) => numUpdate('expectedSalaryAfter', e.target.value)}
+                        placeholder="e.g. 75000 per year"
+                        className="glass-input h-11"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Current Annual Salary (Before Tax)
+                      </Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={form.currentSalary || ''}
+                        onChange={(e) => numUpdate('currentSalary', e.target.value)}
+                        placeholder="e.g. 30000 per year"
+                        className="glass-input h-11"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Part-time Income During Studies (Annual)
+                      </Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={form.partTimeIncomeAnnual || ''}
+                        onChange={(e) => numUpdate('partTimeIncomeAnnual', e.target.value)}
+                        placeholder="e.g. 8000 per year"
+                        className="glass-input h-11"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+                      <div className="gradient-blue inline-flex rounded-xl p-2">
+                        <Settings2 className="h-4 w-4 text-white" />
+                      </div>
+                      Advanced Settings
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground ml-11">Fine-tune your calculation parameters.</p>
+                  </div>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Tax Rate (%)</Label>
+                      <Input type="number" min={0} max={60} value={form.taxRate || ''} onChange={(e) => numUpdate('taxRate', e.target.value)} className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Inflation Rate (%)</Label>
+                      <Input type="number" min={0} max={20} step={0.1} value={form.inflationRate || ''} onChange={(e) => numUpdate('inflationRate', e.target.value)} className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Calculation Period (years)</Label>
+                      <Input type="number" min={5} max={50} value={form.calculationYears || ''} onChange={(e) => numUpdate('calculationYears', e.target.value)} className="glass-input h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Currency</Label>
+                      <Select value={form.currencyCode || 'USD'} onValueChange={(v) => update('currencyCode', v)}>
+                        <SelectTrigger className="glass-input h-11"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {currencies && currencies.length > 0 ? currencies.map(c => (
+                            <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</SelectItem>
+                          )) : (
+                            <SelectItem value="_none" disabled>No currencies available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Submit Error */}
+          {submitError && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 glass-card border-[#FF7849]/20 p-4 text-sm text-[#FF7849]"
+            >
+              {submitError}
+            </motion.div>
           )}
+
+          {/* Navigation */}
+          <div className="mt-6 flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setStep(s => s - 1)}
+              disabled={step === 0}
+              className="gap-2 rounded-xl border-white/[0.1] text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+
+            {step < STEPS.length - 1 ? (
+              <Button
+                onClick={() => setStep(s => s + 1)}
+                disabled={!canNext()}
+                className="gap-2 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20"
+              >
+                Next <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="gap-2 rounded-xl bg-gradient-to-r from-[#C77DFF] to-[#FF6EC7] text-white border-0 px-8 font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Calculating...
+                  </span>
+                ) : (
+                  <>Calculate ROI <ArrowRight className="h-4 w-4" /></>
+                )}
+              </Button>
+            )}
+          </div>
+
+          {/* ── Ad below form ── */}
+          <AdSlot slot="below-results" className="mt-8" />
+
+          {/* ── SEO Content (below the fold) ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 space-y-8"
+          >
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold text-foreground mb-4">What You Get From This Calculator</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                {[
+                  'Net ROI and ROI percentage for your degree',
+                  'Break-even timeline in years',
+                  'Lifetime earnings projection',
+                  'Conservative, expected & optimistic scenarios',
+                  'Career outlook and market demand analysis',
+                  'Shareable results link',
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Ad inside SEO content ── */}
+            <AdSlot slot="in-content" />
+
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-foreground">How the Education ROI Calculator Works</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Our calculator uses a comprehensive financial model that accounts for total education costs
+                (tuition, living, opportunity cost), post-graduation salary projections, tax rates, inflation,
+                and loan interest. The result is a realistic, data-driven picture of your degree's financial return.
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Unlike simple "salary minus tuition" estimates, EduROI calculates your <strong>true net ROI</strong> —
+                the difference between what you earn with a degree versus what you would have earned without it,
+                minus everything it cost you to get there.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-foreground">Explore More ROI Insights</h2>
+              <div className="grid gap-3 md:grid-cols-3">
+                <Link to="/majors" className="group glass-card p-4 transition-all hover:border-accent/30">
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">Compare Majors →</h3>
+                  <p className="text-xs text-muted-foreground mt-1">See which degrees offer the best ROI across fields</p>
+                </Link>
+                <Link to="/countries" className="group glass-card p-4 transition-all hover:border-accent/30">
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">Best Countries →</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Discover where your degree delivers the highest return</p>
+                </Link>
+                <Link to="/blog" className="group glass-card p-4 transition-all hover:border-accent/30">
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">Education Finance Blog →</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Expert guides on maximizing education ROI</p>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

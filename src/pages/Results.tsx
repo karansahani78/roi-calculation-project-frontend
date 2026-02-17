@@ -266,6 +266,31 @@ const ResultsPage = () => {
           </div>
         </motion.div>
 
+        {/* ─── BLOG LINKS ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mt-6"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">📖 Further Reading</p>
+          <div className="grid gap-3 md:grid-cols-3">
+            <Link to="/blog/is-college-worth-it-in-2025" className="group glass-card p-4 transition-all hover:border-[#C77DFF]/30">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#C77DFF] transition-colors leading-snug">Is College Worth It in 2025? →</h3>
+              <p className="text-xs text-white/40 mt-1">Data-driven answer based on 10,000+ salary data points</p>
+            </Link>
+            <Link to="/blog/highest-roi-degrees-2025" className="group glass-card p-4 transition-all hover:border-[#4DD6C8]/30">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#4DD6C8] transition-colors leading-snug">Top 15 Highest ROI Degrees →</h3>
+              <p className="text-xs text-white/40 mt-1">Ranked by net financial return over 30 years</p>
+            </Link>
+            <Link to="/blog" className="group glass-card p-4 transition-all hover:border-white/20">
+              <h3 className="text-sm font-semibold text-white group-hover:text-white/80 transition-colors leading-snug">Education Finance Blog →</h3>
+              <p className="text-xs text-white/40 mt-1">Expert guides on maximizing your education ROI</p>
+            </Link>
+          </div>
+        </motion.div>
+
         {/* Decision Confidence Score */}
         {baseRequest && (
           <DecisionConfidenceSection baseRequest={baseRequest} />

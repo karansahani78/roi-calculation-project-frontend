@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-
 import Index from "./pages/Index";
 import Calculator from "./pages/Calculator";
 import Results from "./pages/Results";
@@ -19,6 +18,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import DegreeWorthIt from "./pages/DegreeWorthIt";
 import ShareRedirect from "./pages/ShareRedirect"; // ✅ IMPORTANT
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 
 const queryClient = new QueryClient();
 
@@ -35,13 +36,10 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/calculator" element={<Calculator />} />
-
                 {/* ✅ CANONICAL RESULT PAGE */}
                 <Route path="/results/:uuid" element={<Results />} />
-
                 {/* ✅ SHARE LINK → REDIRECT → RESULTS */}
                 <Route path="/share/:uuid" element={<ShareRedirect />} />
-
                 {/* Other pages */}
                 <Route path="/countries" element={<Countries />} />
                 <Route path="/majors" element={<Majors />} />
@@ -50,7 +48,9 @@ const App = () => (
                 <Route path="/page/:slug" element={<SeoPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
-
+                {/* ✅ BLOG */}
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
