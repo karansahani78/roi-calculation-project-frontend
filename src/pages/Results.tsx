@@ -77,7 +77,10 @@ const ResultsPage = () => {
           setResult(data);
           setLoading(false);
         })
-        .catch((err) => { setError(err instanceof Error ? err.message : 'Could not load result.'); setLoading(false); });
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : 'Could not load result.');
+          setLoading(false);
+        });
     } else {
       setLoading(false);
     }
@@ -155,16 +158,31 @@ const ResultsPage = () => {
     <div className="relative min-h-screen results-dark-bg">
       <AmbientParticles count={35} color="#C77DFF" maxOpacity={0.2} />
       <FilmGrain opacity={0.02} />
+
       {/* Hero */}
       <section className="relative py-12 md:py-16">
         <div className="container max-w-5xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
             <p className="text-sm font-medium text-white/40 tracking-wide uppercase">
               {inputSummary.degreeLevel} in {inputSummary.major} • {inputSummary.country}
             </p>
             <h1 className="mt-3 text-4xl font-extrabold text-white md:text-5xl tracking-tight">
               Your Education <span className="text-gradient-purple">ROI Analysis</span>
             </h1>
+
+            {/* ── ADDED: Page-level orientation text ── */}
+            <p className="mt-4 mx-auto max-w-2xl text-base sm:text-sm leading-relaxed text-white/50">
+              This analysis projects the long-term financial value of your degree using your
+              personal inputs alongside real labour-market data. It is designed to help you
+              understand what the numbers mean — not to tell you what to decide. Think of it as a
+              calm, data-backed conversation with an impartial financial guide.
+            </p>
+            {/* ── END ADDED ── */}
 
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -187,6 +205,67 @@ const ResultsPage = () => {
               <MetricCard key={m.label} {...m} delay={0.15 + i * 0.1} />
             ))}
           </div>
+
+          {/* ── ADDED: Per-metric explanations rendered below the card grid ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4"
+          >
+            {/* Net ROI */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3">
+              <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-wide text-white/50">
+                Net ROI — in plain terms
+              </p>
+              <p className="text-sm md:text-xs leading-relaxed text-white/40">
+                This is the total extra money your degree is projected to put in your pocket over
+                your entire working life, after every cost has been subtracted — including tuition,
+                living expenses, loan interest, and the salary you forgo while studying. A positive
+                number means the degree is expected to more than pay for itself.
+              </p>
+            </div>
+
+            {/* ROI % */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3">
+              <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-wide text-white/50">
+                ROI % — strong or weak?
+              </p>
+              <p className="text-sm md:text-xs leading-relaxed text-white/40">
+                This shows how much you get back for every dollar invested in your education. As a
+                benchmark, a diversified investment portfolio has historically returned around 7–10%
+                per year over the long run. An ROI % that comfortably exceeds that benchmark
+                suggests your degree is a financially efficient use of capital.
+              </p>
+            </div>
+
+            {/* Break-even */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3">
+              <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-wide text-white/50">
+                Break-even — before &amp; after
+              </p>
+              <p className="text-sm md:text-xs leading-relaxed text-white/40">
+                Before this point, your higher graduate salary is still in the process of repaying
+                the full cost of your education. After it, every additional working year adds clear
+                net financial gain. A shorter break-even period means faster payoff and less
+                vulnerability to career changes or life interruptions.
+              </p>
+            </div>
+
+            {/* Annual Return */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3">
+              <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-wide text-white/50">
+                Annual Return — investment context
+              </p>
+              <p className="text-sm md:text-xs leading-relaxed text-white/40">
+                This expresses your degree's financial return the same way a savings account or
+                investment fund reports yearly growth. Comparing it to a current risk-free savings
+                rate (around 4–5%) shows whether the degree meaningfully outperforms simply
+                investing your tuition money instead of spending it on education.
+              </p>
+            </div>
+          </motion.div>
+          {/* ── END ADDED ── */}
         </div>
       </section>
 
@@ -194,19 +273,61 @@ const ResultsPage = () => {
       <div className="container max-w-5xl pb-12">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
+
+            {/* ── ADDED: Cost breakdown section intro ── */}
+            <div>
+              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                Where your money goes
+              </p>
+              <p className="mb-3 text-base sm:text-sm leading-relaxed text-white/50">
+                Understanding which costs dominate your total investment is the first step to
+                reducing financial risk. For many students, the single largest expense is not
+                tuition but the income forfeited by studying full-time rather than working — known
+                as opportunity cost. Use this chart to identify your biggest financial lever.
+              </p>
+            </div>
+            {/* ── END ADDED ── */}
+
             <CostBreakdownChart
               data={pieData}
               currencySymbol={inputSummary.currencySymbol}
               totalInvestment={costBreakdown.totalInvestment}
               formatCurrency={formatCurrency}
             />
+
+            {/* ── ADDED: Cost breakdown caption ── */}
+            <p className="text-sm md:text-xs leading-relaxed text-white/35">
+              <strong className="font-medium text-white/50">Opportunity cost</strong> is the salary
+              you could have earned by working instead of studying — a real economic cost even
+              though no money leaves your account directly. Shortening your programme or working
+              part-time during study are typically the most effective ways to reduce this component.
+            </p>
+            {/* ── END ADDED ── */}
+
+            {/* ── ADDED: Earnings chart section intro ── */}
+            <div>
+              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                Earnings over your career
+              </p>
+              <p className="mb-3 text-base sm:text-sm leading-relaxed text-white/50">
+                This chart maps two parallel career paths: your projected cumulative earnings with
+                this degree versus what you might expect without one. The point where the lines
+                cross is your financial break-even. Every year after that crossover represents the
+                compounding advantage of having the qualification — a gap that typically widens with
+                seniority and salary progression.
+              </p>
+            </div>
+            {/* ── END ADDED ── */}
+
             <EarningsChart
               data={yearlyBreakdown}
               currencySymbol={inputSummary.currencySymbol}
               formatCurrency={formatCurrency}
             />
+
             <AdSlot slot="below-results" />
-            <RecommendationsCard recommendations={recommendations} />
+
+          
           </div>
 
           {/* Sidebar */}
@@ -214,6 +335,34 @@ const ResultsPage = () => {
             <ShareCard shareableUrl={result.shareableUrl} />
             <PdfDownloadCard uuid={result.uuid} />
             <AdSlot slot="sidebar" />
+
+            {/* ── ADDED: Summary card legend ── */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3">
+              <p className="mb-2 text-sm md:text-xs font-semibold uppercase tracking-wide text-white/50">
+                What each figure means
+              </p>
+              <ul className="space-y-2 text-sm md:text-xs leading-relaxed text-white/40">
+                <li>
+                  <span className="font-medium text-white/55">Total Cost</span> — every dollar
+                  spent on your education: fees, living expenses, and loan interest combined.
+                </li>
+                <li>
+                  <span className="font-medium text-white/55">Opportunity Cost</span> — the salary
+                  you forgo by not working full-time during your studies. Often larger than tuition.
+                </li>
+                <li>
+                  <span className="font-medium text-white/55">Lifetime Earnings</span> — your total
+                  projected career income with this degree factored in.
+                </li>
+                <li>
+                  <span className="font-medium text-white/55">Additional Earnings</span> — the
+                  extra lifetime income your degree is expected to generate above a no-degree career
+                  baseline. This is the clearest single measure of financial return.
+                </li>
+              </ul>
+            </div>
+            {/* ── END ADDED ── */}
+
             <SummaryCard items={summaryItems} />
 
             <motion.div
@@ -222,7 +371,10 @@ const ResultsPage = () => {
               transition={{ delay: 0.9, duration: 0.5 }}
             >
               <Link to="/calculator">
-                <Button variant="outline" className="w-full gap-2 rounded-xl border-white/10 text-white/60 hover:bg-white/5 hover:text-white">
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 rounded-xl border-white/10 text-white/60 hover:bg-white/5 hover:text-white"
+                >
                   New Calculation <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -274,50 +426,161 @@ const ResultsPage = () => {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="mt-6"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">📖 Further Reading</p>
+          <p className="text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">
+            📖 Further Reading
+          </p>
           <div className="grid gap-3 md:grid-cols-3">
-            <Link to="/blog/is-college-worth-it-in-2025" className="group glass-card p-4 transition-all hover:border-[#C77DFF]/30">
-              <h3 className="text-sm font-semibold text-white group-hover:text-[#C77DFF] transition-colors leading-snug">Is College Worth It in 2025? →</h3>
-              <p className="text-xs text-white/40 mt-1">Data-driven answer based on 10,000+ salary data points</p>
+            <Link
+              to="/blog/is-college-worth-it-in-2025"
+              className="group glass-card p-4 transition-all hover:border-[#C77DFF]/30"
+            >
+              <h3 className="text-base sm:text-sm font-semibold text-white group-hover:text-[#C77DFF] transition-colors leading-snug">
+                Is College Worth It in 2025? →
+              </h3>
+              <p className="text-sm md:text-xs text-white/40 mt-1">
+                Data-driven answer based on 10,000+ salary data points
+              </p>
             </Link>
-            <Link to="/blog/highest-roi-degrees-2025" className="group glass-card p-4 transition-all hover:border-[#4DD6C8]/30">
-              <h3 className="text-sm font-semibold text-white group-hover:text-[#4DD6C8] transition-colors leading-snug">Top 15 Highest ROI Degrees →</h3>
-              <p className="text-xs text-white/40 mt-1">Ranked by net financial return over 30 years</p>
+            <Link
+              to="/blog/highest-roi-degrees-2025"
+              className="group glass-card p-4 transition-all hover:border-[#4DD6C8]/30"
+            >
+              <h3 className="text-base sm:text-sm font-semibold text-white group-hover:text-[#4DD6C8] transition-colors leading-snug">
+                Top 15 Highest ROI Degrees →
+              </h3>
+              <p className="text-sm md:text-xs text-white/40 mt-1">
+                Ranked by net financial return over 30 years
+              </p>
             </Link>
-            <Link to="/blog" className="group glass-card p-4 transition-all hover:border-white/20">
-              <h3 className="text-sm font-semibold text-white group-hover:text-white/80 transition-colors leading-snug">Education Finance Blog →</h3>
-              <p className="text-xs text-white/40 mt-1">Expert guides on maximizing your education ROI</p>
+            <Link
+              to="/blog"
+              className="group glass-card p-4 transition-all hover:border-white/20"
+            >
+              <h3 className="text-base sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors leading-snug">
+                Education Finance Blog →
+              </h3>
+              <p className="text-sm md:text-xs text-white/40 mt-1">
+                Expert guides on maximizing your education ROI
+              </p>
             </Link>
           </div>
         </motion.div>
 
         {/* Decision Confidence Score */}
         {baseRequest && (
-          <DecisionConfidenceSection baseRequest={baseRequest} />
+          <>
+            {/* ── ADDED: Decision Confidence Score explanation ── */}
+            <div className="mt-8 mb-3">
+              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                Decision Confidence Score
+              </p>
+              <p className="text-base sm:text-sm leading-relaxed text-white/50">
+                This score reflects how well your inputs align with verified real-world data for
+                your chosen field, degree level, and country. A high score means your salary
+                expectations, cost estimates, and career assumptions are strongly supported by
+                current labour-market evidence — which makes the ROI figures above more reliable.
+              </p>
+              <p className="mt-2 text-base sm:text-sm leading-relaxed text-white/50">
+                A lower score does not mean a bad outcome; it indicates more uncertainty in the
+                projection and suggests gathering additional information before making a final
+                decision. Use this score to calibrate how much confidence to place in the numbers
+                — high confidence warrants acting on the analysis; lower confidence is a prompt to
+                research further.
+              </p>
+            </div>
+            {/* ── END ADDED ── */}
+            <DecisionConfidenceSection baseRequest={baseRequest} />
+          </>
         )}
 
         {/* Simulation Section */}
         {baseRequest && (
-          <SimulationSection
-            baseRequest={baseRequest}
-            currencySymbol={inputSummary.currencySymbol}
-          />
+          <>
+            {/* ── ADDED: Simulation explanation ── */}
+            <div className="mt-8 mb-3">
+              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                ROI Scenario Simulations
+              </p>
+              <p className="text-base sm:text-sm leading-relaxed text-white/50">
+                Life rarely follows a single script. This section lets you stress-test your ROI
+                across a range of realistic assumptions — such as a longer job search, a more
+                competitive starting salary market, or a programme running over time. If your ROI
+                stays positive across most scenarios, that signals genuine financial resilience in
+                your investment. If it turns negative under plausible changes, that is important
+                risk information to have before committing.
+              </p>
+              <p className="mt-2 text-base sm:text-sm leading-relaxed text-white/50">
+                Use the simulations to understand your range of possible outcomes, not to find the
+                most optimistic one.
+              </p>
+            </div>
+            {/* ── END ADDED ── */}
+            <SimulationSection
+              baseRequest={baseRequest}
+              currencySymbol={inputSummary.currencySymbol}
+            />
+          </>
         )}
 
         {/* Career Intelligence Panel */}
         {baseRequest && (
-          <CareerIntelligencePanel
-            request={{
-              majorId: baseRequest.majorId,
-              countryCode: baseRequest.countryCode,
-              degreeLevelId: baseRequest.degreeLevelId,
-              expectedSalaryAfter: baseRequest.expectedSalaryAfter,
-              durationYears: baseRequest.durationYears,
-              roiPercentage: roiResults.roiPercentage,
-            }}
-            currencySymbol={inputSummary.currencySymbol}
-          />
+          <>
+            {/* ── ADDED: Career intelligence and salary band explanation ── */}
+            <div className="mt-8 mb-3">
+              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                Career Outcome Intelligence
+              </p>
+              <p className="text-base sm:text-sm leading-relaxed text-white/50">
+                The career outcome probabilities below are derived from aggregated labour-market
+                data specific to your field and region. They represent statistical likelihoods
+                across a large population of graduates in similar roles — your individual result
+                will also depend on factors such as location, employer, experience, and personal
+                initiative. Use these probabilities to set informed expectations, not as a personal
+                ceiling or guaranteed floor.
+              </p>
+              <p className="mt-2 text-base sm:text-sm leading-relaxed text-white/50">
+                On salary confidence bands:{' '}
+                <strong className="font-medium text-white/65">Conservative</strong> reflects the
+                lower end of typical graduate earnings for this field — roughly the 25th percentile
+                of observed outcomes.{' '}
+                <strong className="font-medium text-white/65">Optimistic</strong> represents
+                outcomes achieved by graduates who progress well, around the 75th percentile.
+                Financial planning around the conservative figure is the more prudent approach;
+                anything above it becomes an upside bonus rather than a dependency.
+              </p>
+            </div>
+            {/* ── END ADDED ── */}
+            <CareerIntelligencePanel
+              request={{
+                majorId: baseRequest.majorId,
+                countryCode: baseRequest.countryCode,
+                degreeLevelId: baseRequest.degreeLevelId,
+                expectedSalaryAfter: baseRequest.expectedSalaryAfter,
+                durationYears: baseRequest.durationYears,
+                roiPercentage: roiResults.roiPercentage,
+              }}
+              currencySymbol={inputSummary.currencySymbol}
+            />
+          </>
         )}
+
+        {/* ── ADDED: Closing disclaimer ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="mt-12 border-t border-white/[0.06] pt-8 text-center"
+        >
+          <p className="mx-auto max-w-2xl text-sm md:text-xs leading-relaxed text-white/25">
+            All projections are based on the inputs you provided and aggregated third-party
+            labour-market data. Figures are provided for informational and planning purposes only
+            and do not constitute financial, legal, or careers advice. Individual outcomes will
+            vary. We recommend consulting a qualified financial adviser or careers professional
+            before making significant education investment decisions.
+          </p>
+        </motion.div>
+        {/* ── END ADDED ── */}
       </div>
     </div>
   );
