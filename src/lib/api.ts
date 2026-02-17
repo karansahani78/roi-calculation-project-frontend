@@ -20,7 +20,7 @@ import type {
   DegreeWorthItResponse,
 } from '@/types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://71a6-111-119-37-34.ngrok-free.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://719f-111-119-37-34.ngrok-free.app';
 
 const client = axios.create({
   baseURL: API_BASE,

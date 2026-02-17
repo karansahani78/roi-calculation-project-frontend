@@ -254,7 +254,7 @@ const ResultsPage = () => {
             </p>
 
             <Link
-              to={`/degree-worth-it?majorId=${baseRequest?.majorId}&countryCode=${baseRequest?.countryCode}&currencyCode=${inputSummary.currencyCode}`}
+              to={`/insights/degree-worth-it?majorId=${baseRequest?.majorId}&countryCode=${baseRequest?.countryCode}&currencyCode=${inputSummary.currencyCode}`}
             >
               <Button
                 size="lg"
