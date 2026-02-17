@@ -20,7 +20,6 @@ import { fetchSharedResult } from '@/lib/api';
 import { MetricCard } from '@/components/results/MetricCard';
 import { CostBreakdownChart } from '@/components/results/CostBreakdownChart';
 import { EarningsChart } from '@/components/results/EarningsChart';
-import { RecommendationsCard } from '@/components/results/RecommendationsCard';
 import { ShareCard } from '@/components/results/ShareCard';
 import { PdfDownloadCard } from '@/components/results/PdfDownloadCard';
 import { SummaryCard } from '@/components/results/SummaryCard';
@@ -272,6 +271,8 @@ const ResultsPage = () => {
       {/* Content */}
       <div className="container max-w-5xl pb-12">
         <div className="grid gap-6 lg:grid-cols-3">
+
+          {/* ── MAIN COLUMN ── */}
           <div className="lg:col-span-2 space-y-6">
 
             {/* ── ADDED: Cost breakdown section intro ── */}
@@ -327,10 +328,9 @@ const ResultsPage = () => {
 
             <AdSlot slot="below-results" />
 
-          
           </div>
 
-          {/* Sidebar */}
+          {/* ── SIDEBAR ── */}
           <div className="space-y-6">
             <ShareCard shareableUrl={result.shareableUrl} />
             <PdfDownloadCard uuid={result.uuid} />
@@ -379,6 +379,41 @@ const ResultsPage = () => {
                 </Button>
               </Link>
             </motion.div>
+
+            {/* ── ADDED: Sidebar context cards for sections below ── */}
+            {baseRequest && (
+              <div className="space-y-4">
+
+                {/* Simulation context */}
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-4">
+                  <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                    Simulate your ROI
+                  </p>
+                  <p className="text-sm md:text-xs leading-relaxed text-white/45">
+                    Adjust salary and cost assumptions below to see how your ROI changes across
+                    best-case, realistic, and worst-case scenarios. If the ROI stays positive in the
+                    pessimistic scenario, your investment is financially resilient.
+                  </p>
+                </div>
+
+                {/* Career Intelligence context */}
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-4">
+                  <p className="mb-1.5 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
+                    Career outcomes explained
+                  </p>
+                  <p className="text-sm md:text-xs leading-relaxed text-white/45">
+                    The probabilities and salary bands below are drawn from real graduate data for
+                    your field. <strong className="text-white/60">Conservative</strong> = 25th
+                    percentile earnings. <strong className="text-white/60">Optimistic</strong> =
+                    75th percentile. Plan around the conservative figure — anything above is a
+                    bonus.
+                  </p>
+                </div>
+
+              </div>
+            )}
+            {/* ── END ADDED ── */}
+
           </div>
         </div>
 
@@ -495,73 +530,25 @@ const ResultsPage = () => {
 
         {/* Simulation Section */}
         {baseRequest && (
-          <>
-            {/* ── ADDED: Simulation explanation ── */}
-            <div className="mt-8 mb-3">
-              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
-                ROI Scenario Simulations
-              </p>
-              <p className="text-base sm:text-sm leading-relaxed text-white/50">
-                Life rarely follows a single script. This section lets you stress-test your ROI
-                across a range of realistic assumptions — such as a longer job search, a more
-                competitive starting salary market, or a programme running over time. If your ROI
-                stays positive across most scenarios, that signals genuine financial resilience in
-                your investment. If it turns negative under plausible changes, that is important
-                risk information to have before committing.
-              </p>
-              <p className="mt-2 text-base sm:text-sm leading-relaxed text-white/50">
-                Use the simulations to understand your range of possible outcomes, not to find the
-                most optimistic one.
-              </p>
-            </div>
-            {/* ── END ADDED ── */}
-            <SimulationSection
-              baseRequest={baseRequest}
-              currencySymbol={inputSummary.currencySymbol}
-            />
-          </>
+          <SimulationSection
+            baseRequest={baseRequest}
+            currencySymbol={inputSummary.currencySymbol}
+          />
         )}
 
         {/* Career Intelligence Panel */}
         {baseRequest && (
-          <>
-            {/* ── ADDED: Career intelligence and salary band explanation ── */}
-            <div className="mt-8 mb-3">
-              <p className="mb-1 text-sm md:text-xs font-semibold uppercase tracking-widest text-white/30">
-                Career Outcome Intelligence
-              </p>
-              <p className="text-base sm:text-sm leading-relaxed text-white/50">
-                The career outcome probabilities below are derived from aggregated labour-market
-                data specific to your field and region. They represent statistical likelihoods
-                across a large population of graduates in similar roles — your individual result
-                will also depend on factors such as location, employer, experience, and personal
-                initiative. Use these probabilities to set informed expectations, not as a personal
-                ceiling or guaranteed floor.
-              </p>
-              <p className="mt-2 text-base sm:text-sm leading-relaxed text-white/50">
-                On salary confidence bands:{' '}
-                <strong className="font-medium text-white/65">Conservative</strong> reflects the
-                lower end of typical graduate earnings for this field — roughly the 25th percentile
-                of observed outcomes.{' '}
-                <strong className="font-medium text-white/65">Optimistic</strong> represents
-                outcomes achieved by graduates who progress well, around the 75th percentile.
-                Financial planning around the conservative figure is the more prudent approach;
-                anything above it becomes an upside bonus rather than a dependency.
-              </p>
-            </div>
-            {/* ── END ADDED ── */}
-            <CareerIntelligencePanel
-              request={{
-                majorId: baseRequest.majorId,
-                countryCode: baseRequest.countryCode,
-                degreeLevelId: baseRequest.degreeLevelId,
-                expectedSalaryAfter: baseRequest.expectedSalaryAfter,
-                durationYears: baseRequest.durationYears,
-                roiPercentage: roiResults.roiPercentage,
-              }}
-              currencySymbol={inputSummary.currencySymbol}
-            />
-          </>
+          <CareerIntelligencePanel
+            request={{
+              majorId: baseRequest.majorId,
+              countryCode: baseRequest.countryCode,
+              degreeLevelId: baseRequest.degreeLevelId,
+              expectedSalaryAfter: baseRequest.expectedSalaryAfter,
+              durationYears: baseRequest.durationYears,
+              roiPercentage: roiResults.roiPercentage,
+            }}
+            currencySymbol={inputSummary.currencySymbol}
+          />
         )}
 
         {/* ── ADDED: Closing disclaimer ── */}
